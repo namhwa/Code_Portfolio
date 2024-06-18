@@ -6,10 +6,12 @@
 #include "Components/Border.h"
 #include "Components/Overlay.h"
 #include "Components/ScaleBox.h"
+#include "Components/TextBlock.h"
 
 #include "Character/SDKHUD.h"
 #include "Object/SDKFurniture.h"
 #include "Object/SDKPreviewFurniture.h"
+
 #include "UI/SDKButtonParam.h"
 #include "UI/SDKWidgetParam.h"
 #include "UI/SDKHousingWidget.h"
