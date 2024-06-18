@@ -185,10 +185,14 @@ void USDKSpringArmComponent::SetSpringArmLagSpeedByType()
 void USDKSpringArmComponent::SetSpringArmRotationByType()
 {
 	if(CameraType == EFurnitureType::None)
+	{	
 		return;
+	}
 
-	if(GetOwner() == nullptr)
+	if(!IsValid(GetOwner()))
+	{
 		return;
+	}
 
 	FRotator tTypeRotator = GetOwner()->GetActorRotation();
 	tTypeRotator.Yaw -= 45.f;
@@ -219,7 +223,9 @@ void USDKSpringArmComponent::SetSpringArmRotationByType()
 void USDKSpringArmComponent::SetWallTypesForwardRotator(bool bForward)
 {
 	if(CameraType != EFurnitureType::WallHangings)
+	{
 		return;
+	}
 
 	FRotator tRotator = bForward ? FRotator(-30.f, -60.f, 0.f) : FRotator(-30.f, -110, 0.f);
 	SetRelativeRotation(tRotator);
