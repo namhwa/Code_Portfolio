@@ -4,13 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UI/SDKUserWidget.h"
-
 #include "Share/SDKStructUI.h"
-//#include "Engine/Texture2D.h"
-#include "Components/GridPanel.h"
-
 #include "SDKHousingCategoryWidget.generated.h"
 
+class UGridPanel;
 class USDKWidgetParam;
 
 UCLASS()
@@ -20,7 +17,7 @@ class ARENA_API USDKHousingCategoryWidget : public USDKUserWidget
 	
 public:
 	//Begine UserWidget Interface
-	virtual void NativeConstruct() override;
+	virtual void CreateUIProcess() override;
 	//End UserWidget Interface
 	
 	void InitCategoryButtons();
