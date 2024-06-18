@@ -70,18 +70,6 @@ void USDKFurnitureBoxWidget::SetOwnedCount(int32 NewCount)
 	SetIsEnabled(OwnedCount > 0);
 }
 
-void USDKFurnitureBoxWidget::SetWidgetVisibility(bool bVisible)
-{
-	if(bVisible)
-	{
-		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		SetVisibility(ESlateVisibility::Collapsed);
-	}
-}
-
 void USDKFurnitureBoxWidget::SetButtonFurnitureParam()
 {
 	if(!IsValid(SDKButtonFurniture))
