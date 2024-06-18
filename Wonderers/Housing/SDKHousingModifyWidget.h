@@ -34,7 +34,7 @@ class ARENA_API USDKHousingModifyWidget : public USDKUserWidget
 public:
 	USDKHousingModifyWidget();
 
-	virtual void NativeConstruct() override;
+	virtual void CreateUIProcess() override;
 
 	void InitWidgetData();
 	void InitTextSetting();
