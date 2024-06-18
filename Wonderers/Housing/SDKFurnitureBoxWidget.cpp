@@ -19,14 +19,9 @@
 DEFINE_LOG_CATEGORY(LogFurnitureBox)
 
 
-void USDKFurnitureBoxWidget::NativeConstruct()
-{
-	Super::NativeConstruct();
-}
-
 void USDKFurnitureBoxWidget::InitFurnitureInfo()
 {
-	if(TableID.IsEmpty() == true)
+	if(TableID.IsEmpty())
 	{
 		return;
 	}
@@ -39,7 +34,7 @@ void USDKFurnitureBoxWidget::InitFurnitureInfo()
 		return;
 	}
 
-	if (ItemTable->IconPath.GetUniqueID().IsAsset() == true)
+	if (ItemTable->IconPath.GetUniqueID().IsAsset())
 	{
 		SetImageTexturePath(ImageFurnitureIcon, ItemTable->IconPath.ToString());
 	}
@@ -55,7 +50,7 @@ void USDKFurnitureBoxWidget::InitFurnitureInfo()
 
 void USDKFurnitureBoxWidget::SetTableID(FString NewTableID)
 {
-	if(TableID.IsEmpty() == true || TableID != NewTableID)
+	if(TableID.IsEmpty() || TableID != NewTableID)
 	{
 		TableID = NewTableID;
 		
@@ -94,50 +89,55 @@ void USDKFurnitureBoxWidget::SetWidgetVisibility(bool bVisible)
 
 void USDKFurnitureBoxWidget::SetButtonFurnitureParam()
 {
-	if(SDKButtonFurniture == nullptr)
+	if(!IsValid(SDKButtonFurniture))
+	{
 		return;
+	}
 
 	USDKWidgetParam* pParam = SDKButtonFurniture->GetClickedParam();
-	if(pParam == nullptr)
+	if(!IsValid(pParam))
 	{
 		USDKWidgetParamString* pNewParam = NewObject<USDKWidgetParamString>(this, USDKWidgetParamString::StaticClass());
-		if(pNewParam == nullptr)
-			return;
-
-		pNewParam->SetValue(TableID);
-
-		SDKButtonFurniture->SetClickedParam(pNewParam);
-		SDKButtonFurniture->OnClickedParam.AddDynamic(this, &USDKFurnitureBoxWidget::OnClickedFurniture);
+		if(IsValid(pNewParam))
+		{
+			pNewParam->SetValue(TableID);
+	
+			SDKButtonFurniture->SetClickedParam(pNewParam);
+			SDKButtonFurniture->OnClickedParam.AddDynamic(this, &USDKFurnitureBoxWidget::OnClickedFurniture);
+		}
 	}
 	else
 	{
 		USDKWidgetParamString* pFurnitureParam = Cast<USDKWidgetParamString>(pParam);
-		if(pFurnitureParam == nullptr)
-			return;
-
-		pFurnitureParam->SetValue(TableID);
+		if(IsValid(pFurnitureParam))
+		{
+			pFurnitureParam->SetValue(TableID);
+		}
 	}
 }
 
 void USDKFurnitureBoxWidget::OnClickedFurniture(USDKWidgetParam* param)
 {
-	if(param == nullptr)
+	if(!IsValid(param))
+	{
 		return;
+	}
 
 	USDKWidgetParamString* pFurnitureParam = Cast<USDKWidgetParamString>(param);
-	if(pFurnitureParam == nullptr)
-		return;
-
-	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetOwningPlayer()->GetHUD());
-	if(SDKHUD == nullptr)
-		return;
-
-	if(SDKHUD->GetUI(EUI::Lobby_UIHousing) == nullptr)
-		return;
-
-	auto pHousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
-	if(pHousingWidget == nullptr)
-		return;
-
-	pHousingWidget->TogglePutMode(true, pFurnitureParam->GetValue());
+	if(IsValid(pFurnitureParam))
+	{
+		ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetOwningPlayer()->GetHUD());
+		if(IsValid(SDKHUD))
+		{
+			USDKUserWidget* UIWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
+			if(IsValid(UIWidget))
+			{
+				USDKHousingWidget* pHousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
+				if(IsValid(pHousingWidget))
+				{
+					pHousingWidget->TogglePutMode(true, pFurnitureParam->GetValue());
+				}
+			}
+		}
+	}
 }
