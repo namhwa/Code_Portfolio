@@ -31,17 +31,17 @@ void USDKHousingButtonWidget::SetHousingMenuIndex(int32 index)
 		SetImageTexturePath(ImageIcon, TextureTable->TexturePath.ToString());
 	}
 
-	USDKWidgetParam* pParam = SDKCheckBoxMenu->GetClickedParam();
-	if(!IsValid(pParam))
+	USDKWidgetParam* Param = SDKCheckBoxMenu->GetClickedParam();
+	if(!IsValid(Param))
 	{
 		CreateWidgetParam(index);
 	}
 	else
 	{
-		USDKWidgetParamInt32* pIntParam = Cast<USDKWidgetParamInt32>(pParam);
-		if(IsValid(pIntParam))
+		USDKWidgetParamInt32* IntParam = Cast<USDKWidgetParamInt32>(pParam);
+		if(IsValid(IntParam))
 		{
-			pIntParam->SetValue(index);
+			IntParam->SetValue(index);
 		}
 		else
 		{
@@ -66,11 +66,11 @@ void USDKHousingButtonWidget::SetButtonSize(FVector2D vSize)
 
 void USDKHousingButtonWidget::CreateWidgetParam(int32 value)
 {
-	USDKWidgetParamInt32* pNewParam = NewObject<USDKWidgetParamInt32>(this, USDKWidgetParamInt32::StaticClass());
-	if(IsValid(pNewParam))
+	USDKWidgetParamInt32* NewParam = NewObject<USDKWidgetParamInt32>(this, USDKWidgetParamInt32::StaticClass());
+	if(IsValid(NewParam))
 	{
-		pNewParam->SetValue(value);
-		SDKCheckBoxMenu->SetClickedParam(pNewParam);
+		NewParam->SetValue(value);
+		SDKCheckBoxMenu->SetClickedParam(NewParam);
 		SDKCheckBoxMenu->OnCheckStateChangedParam.AddDynamic(this, &USDKHousingButtonWidget::OnClickedMenu);
 	}
 }
@@ -82,8 +82,8 @@ void USDKHousingButtonWidget::OnClickedMenu(bool bIsChecked, USDKWidgetParam* pa
 		return;
 	}
 
-	USDKWidgetParamInt32* pIntParam = Cast<USDKWidgetParamInt32>(param);
-	if(IsValid(pIntParam))
+	USDKWidgetParamInt32* IntParam = Cast<USDKWidgetParamInt32>(param);
+	if(IsValid(IntParam))
 	{
 		ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetOwningPlayer()->GetHUD());
 		if(IsValid(SDKHUD))
@@ -96,7 +96,7 @@ void USDKHousingButtonWidget::OnClickedMenu(bool bIsChecked, USDKWidgetParam* pa
 				{
 					bActive = !bActive;
 				
-					EHousingMenu menu = (EHousingMenu)pIntParam->GetValue();
+					EHousingMenu menu = static_cast<EHousingMenu>(IntParam->GetValue());
 					switch(menu)
 					{
 					case EHousingMenu::HiddenList:		HousingWidget->SetHiddenListState(bActive);		break;
