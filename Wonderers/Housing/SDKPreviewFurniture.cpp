@@ -63,24 +63,24 @@ ASDKPreviewFurniture::ASDKPreviewFurniture()
 
 	// 프리뷰 머터리얼 
 	ConstructorHelpers::FObjectFinder<UMaterialInterface> EnablePreviewMaterial(TEXT("/Game/Effects/Materials/Fuzzy_arrow_blue.Fuzzy_arrow_blue"));
-	if(EnablePreviewMaterial.Succeeded() == true)
+	if(EnablePreviewMaterial.Succeeded())
 	{
 		EnableMaterial = EnablePreviewMaterial.Object;
 	}
 
 	ConstructorHelpers::FObjectFinder<UMaterialInterface> DisablePreviewMaterial(TEXT("/Game/Effects/Materials/Fuzzy_arrow_red.Fuzzy_arrow_red"));
-	if(DisablePreviewMaterial.Succeeded() == true)
+	if(DisablePreviewMaterial.Succeeded())
 	{
 		DisableMaterial = DisablePreviewMaterial.Object;
 	}
 
-	if(TileComponent == nullptr)
-		return;
-
-	ConstructorHelpers::FObjectFinder<UStaticMesh> Plan(TEXT("/Game/Environments/Myroom/Meshes/Plane.Plane"));
-	if(Plan.Succeeded() == true)
+	if(IsValid(TileComponent))
 	{
-		TileComponent->SetStaticMesh(Plan.Object);
+		ConstructorHelpers::FObjectFinder<UStaticMesh> Plan(TEXT("/Game/Environments/Myroom/Meshes/Plane.Plane"));
+		if(Plan.Succeeded())
+		{
+			TileComponent->SetStaticMesh(Plan.Object);
+		}
 	}
 }
 
@@ -112,8 +112,10 @@ void ASDKPreviewFurniture::InitFurnitureData()
 
 void ASDKPreviewFurniture::SetStaticMeshLocation(FVector vLocation)
 {
-	if(GetMeshComponent() == nullptr)
+	if(!IsValid(GetMeshComponent()))
+	{
 		return;
+	}
 
 	Super::SetStaticMeshLocation(vLocation);
 
@@ -122,8 +124,10 @@ void ASDKPreviewFurniture::SetStaticMeshLocation(FVector vLocation)
 
 void ASDKPreviewFurniture::SetStaticMeshLocationByType()
 {
-	if(GetMeshComponent() == nullptr)
+	if(!IsValid(GetMeshComponent()))
+	{
 		return;
+	}
 
 	Super::SetStaticMeshLocationByType();
 
@@ -157,12 +161,12 @@ void ASDKPreviewFurniture::SetHudVisibility(bool bHud)
 
 void ASDKPreviewFurniture::SetFurnitureMaterialType(bool bPossibleArrange)
 {
-	if(GetMeshComponent() == nullptr || TileComponent == nullptr)
+	if(!IsValid(GetMeshComponent()) || !IsValid(TileComponent))
 	{
 		return;
 	}
 
-	if(bPossibleArrange == true)
+	if(bPossibleArrange)
 	{
 		GetMeshComponent()->SetMaterial(0, EnableMaterial);
 		TileComponent->SetMaterial(0, EnableMaterial);
@@ -182,17 +186,19 @@ void ASDKPreviewFurniture::SetPreviewRotationSize(FVector vNewSize)
 void ASDKPreviewFurniture::SetWallHangingForwardRotator(bool bForward)
 {
 	if(FurnitureType != EFurnitureType::WallHangings)
-		return;
-
-	if(SpringArmComponent == nullptr)
-		return;
-
-	if(SpringArmComponent->bEnableCameraRotationLag == false)
 	{
-		SpringArmComponent->bEnableCameraRotationLag = true;
+		return;
 	}
 
-	SpringArmComponent->SetWallTypesForwardRotator(bForward);
+	if(IsValid(SpringArmComponent))
+	{
+		if(SpringArmComponent->bEnableCameraRotationLag == false)
+		{
+			SpringArmComponent->bEnableCameraRotationLag = true;
+		}
+	
+		SpringArmComponent->SetWallTypesForwardRotator(bForward);
+	}
 }
 
 void ASDKPreviewFurniture::SetPreviewGroupTransform(FTransform tTransform)
@@ -202,178 +208,201 @@ void ASDKPreviewFurniture::SetPreviewGroupTransform(FTransform tTransform)
 
 void ASDKPreviewFurniture::SetPreviewTileSize()
 {
-	if(TileComponent == nullptr)
-		return;
-
-	FVector vScale = FVector::OneVector;
-
-	switch(FurnitureType)
+	if(IsValid(TileComponent))
 	{
-	case EFurnitureType::WallHangings:
-		vScale.X = Size.X * 1.4f;
-		vScale.Y = Size.Z * 1.4f;
-		break;
-	case EFurnitureType::Furniture:
-	case EFurnitureType::Decoration:
-	case EFurnitureType::Carpet:
-		vScale.X = Size.X * 1.4f;
-		vScale.Y = Size.Y * 1.4f;
-		break;
-	default:
-		break;
+		FVector vScale = FVector::OneVector;
+	
+		switch(FurnitureType)
+		{
+		case EFurnitureType::WallHangings:
+			vScale.X = Size.X * 1.4f;
+			vScale.Y = Size.Z * 1.4f;
+			break;
+		case EFurnitureType::Furniture:
+		case EFurnitureType::Decoration:
+		case EFurnitureType::Carpet:
+			vScale.X = Size.X * 1.4f;
+			vScale.Y = Size.Y * 1.4f;
+			break;
+		default:
+			break;
+		}
+	
+		TileComponent->SetRelativeScale3D(vScale);
 	}
-
-	TileComponent->SetRelativeScale3D(vScale);
 }
 
 void ASDKPreviewFurniture::SetPreviewTileRotation()
 {
-	if(TileComponent == nullptr)
-		return;
-
 	if(FurnitureType != EFurnitureType::WallHangings)
+	{
 		return;
+	}
 
-	FRotator tNewRotator = GetActorRotation();
-	tNewRotator.Roll += 90.f;
-	tNewRotator.Yaw -= 45.f;
-
-	TileComponent->SetRelativeRotation(tNewRotator);
+	if(IsValid(TileComponent))
+	{
+		FRotator tNewRotator = GetActorRotation();
+		tNewRotator.Roll += 90.f;
+		tNewRotator.Yaw -= 45.f;
+	
+		TileComponent->SetRelativeRotation(tNewRotator);
+	}
 }
 
 void ASDKPreviewFurniture::SetPreviewTileLocation()
 {
-	if(TileComponent == nullptr)
-		return;
-
-	FVector vLocation = FVector::ZeroVector;
-
-	switch(FurnitureType)
+	if(IsValid(TileComponent))
 	{
-	case EFurnitureType::WallHangings:
-		if(GetMeshComponent() == nullptr)
+		FVector vLocation = FVector::ZeroVector;
+	
+		switch(FurnitureType)
+		{
+		case EFurnitureType::WallHangings:
+			{
+				if(IsValid(GetMeshComponent()))
+				{
+					vLocation = GetMeshComponent()->GetRelativeTransform().GetLocation();
+				}
+			}
 			break;
-
-		vLocation = GetMeshComponent()->GetRelativeTransform().GetLocation();
-		break;
-	case EFurnitureType::Furniture:
-	case EFurnitureType::Decoration:
-	case EFurnitureType::Carpet:
-		vLocation.Z = -Size.Z * (FMath::Sqrt(2.f) * 50.f) + 3.f;
-		break;
-	default:
-		break;
+		case EFurnitureType::Furniture:
+		case EFurnitureType::Decoration:
+		case EFurnitureType::Carpet:
+			{
+				vLocation.Z = -Size.Z * (FMath::Sqrt(2.f) * 50.f) + 3.f;
+			}
+			break;
+		default:
+			break;
+		}
+	
+		TileComponent->SetRelativeLocation(vLocation);
 	}
-
-	TileComponent->SetRelativeLocation(vLocation);
 }
 
 void ASDKPreviewFurniture::SetPreviewTileLocationByMesh(FVector vLocation)
 {
-	if(TileComponent == nullptr)
-		return;
-
-	vLocation *= TILE_HALF;
-
-	if(FurnitureType != EFurnitureType::WallHangings)
+	if(IsValid(TileComponent))
 	{
-		vLocation.Z = TileComponent->GetRelativeTransform().GetLocation().Z;
+		vLocation *= TILE_HALF;
+	
+		if(FurnitureType != EFurnitureType::WallHangings)
+		{
+			vLocation.Z = TileComponent->GetRelativeTransform().GetLocation().Z;
+		}
+	
+		TileComponent->SetRelativeLocation(vLocation);
 	}
-
-	TileComponent->SetRelativeLocation(vLocation);
 }
 
 void ASDKPreviewFurniture::SetCameraActive()
 {
-	if(SpringArmComponent == nullptr || CameraComponent == nullptr)
-		return;
-
-	SpringArmComponent->SetCameraType(FurnitureType);
-
-	if(FurnitureType == EFurnitureType::Floor)
+	if(IsValid(SpringArmComponent))
 	{
-		SpringArmComponent->SetRelativeLocation(FVector(-1000.f, 300.f, 0.f));
-		SpringArmComponent->TargetArmLength = 3500.f;
+		SpringArmComponent->SetCameraType(FurnitureType);
+	
+		if(FurnitureType == EFurnitureType::Floor)
+		{
+			SpringArmComponent->SetRelativeLocation(FVector(-1000.f, 300.f, 0.f));
+			SpringArmComponent->TargetArmLength = 3500.f;
+		}
+	
+		ASDKLobbyController* LobbyController = Cast<ASDKLobbyController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if(IsValid(LobbyController))
+		{
+			LobbyController->SetViewTarget(this);
+		}
 	}
-
-	auto LobbyController = Cast<ASDKLobbyController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if(LobbyController == nullptr)
-		return;
-
-	LobbyController->SetViewTarget(this);
 }
 
 void ASDKPreviewFurniture::SetModifyWidgetSetting()
 {
-	if(HUDComponent == nullptr || HUDComponent->GetUserWidgetObject() == nullptr)
-		return;
-
-	USDKHousingModifyWidget* pModifyWidget = Cast<USDKHousingModifyWidget>(HUDComponent->GetUserWidgetObject());
-	if(pModifyWidget == nullptr)
-		return;
-
-	if(FurnitureType == EFurnitureType::WallHangings)
+	if(IsValid(HUDComponent)))
 	{
-		pModifyWidget->SetButtonIsEnable(false, EModifyType::Rotation);
-	}
-
-	pModifyWidget->SetWidgetScale((int32)Size.X - 1);
+		UWidget* HUDWidget = HUDComponent->GetUserWidgetObject();
+		if(IsValid(HUDWidget))
+		{
+			USDKHousingModifyWidget* ModifyWidget = Cast<USDKHousingModifyWidget>(HUDWidget);
+			if(IsValid(ModifyWidget))
+			{
+				if(FurnitureType == EFurnitureType::WallHangings)
+				{
+					ModifyWidget->SetButtonIsEnable(false, EModifyType::Rotation);
+				}
+			
+				ModifyWidget->SetWidgetScale((int32)Size.X - 1);
+			}
+		}
+	}		
 }
 
 void ASDKPreviewFurniture::SetVisibilityPreviewTile(bool bVisible)
 {
-	if(TileComponent == nullptr)
-		return;
-
-	TileComponent->SetVisibility(bVisible);
+	if(IsValid(TileComponent))
+	{
+		TileComponent->SetVisibility(bVisible);
+	}
 }
 
 void ASDKPreviewFurniture::SetVisibilityModifyWidget(bool bVisible)
 {
-	if(bVisible == HudVisibility || HUDComponent == nullptr || HUDComponent->GetUserWidgetObject() == nullptr)
+	if(bVisible == HudVisibility)
+	{
 		return;
+	}
 
-	USDKHousingModifyWidget* pModifyWidget = Cast<USDKHousingModifyWidget>(HUDComponent->GetUserWidgetObject());
-	if(pModifyWidget == nullptr)
-		return;
-
-	SetHudVisibility(bVisible);
-
-	pModifyWidget->OnPlayToggleAnim(HudVisibility);
+	if(IsValid(HUDComponent)))
+	{
+		UWidget* HUDWidget = HUDComponent->GetUserWidgetObject();
+		if(IsValid(HUDWidget))
+		{
+			USDKHousingModifyWidget* ModifyWidget = Cast<USDKHousingModifyWidget>(HUDWidget);
+			if(IsValid(ModifyWidget))
+			{
+				SetHudVisibility(bVisible);
+			
+				ModifyWidget->OnPlayToggleAnim(HudVisibility);
+			}
+		}
+	}
 }
 
 void ASDKPreviewFurniture::SetVisibilityPreviewGroupModifyWidget(bool bVisible)
 {
-	if(HUDComponent == nullptr || HUDComponent->GetUserWidgetObject() == nullptr)
-		return;
-
-	USDKHousingModifyWidget* pModifyWidget = Cast<USDKHousingModifyWidget>(HUDComponent->GetUserWidgetObject());
-	if(pModifyWidget == nullptr)
-		return;
-
-	pModifyWidget->SetVisibilityWidget(bVisible);
+	if(IsValid(HUDComponent)))
+	{
+		UWidget* HUDWidget = HUDComponent->GetUserWidgetObject();
+		if(IsValid(HUDWidget))
+		{
+			USDKHousingModifyWidget* ModifyWidget = Cast<USDKHousingModifyWidget>(HUDWidget);
+			if(IsValid(ModifyWidget))
+			{
+				pModifyWidget->SetVisibilityWidget(bVisible);
+			}
+		}
+	}
 }
 
 void ASDKPreviewFurniture::AttachHousingModifyWidget()
 {
-	if(HUDComponent == nullptr)
-		return;
-
-	if(HUDComponent->GetWidgetClass() != nullptr || HUDComponent->GetUserWidgetObject() != nullptr)
-		return;
-
-	auto WidgetTable = USDKTableManager::Get()->FindTableWidgetBluePrint(EWidgetBluePrint::Housing_ModifyHud);
-	if(WidgetTable == nullptr)
-		return;
-
-	auto pWidget = LoadClass<USDKUserWidget>(nullptr, *WidgetTable->WidgetBluePrintPath.ToString());
-	if (pWidget == nullptr)
-		return;
-
-	HUDComponent->SetWidgetClass(pWidget);
-	HUDComponent->SetVisibility(true);
-
-	SetVisibilityModifyWidget(false);
+	if(IsValid(HUDComponent)))
+	{
+		if(!IsValid(HUDComponent->GetUserWidgetObject())
+		{
+			FS_WidgetBlueprint* WidgetTable = USDKTableManager::Get()->FindTableWidgetBluePrint(EWidgetBluePrint::Housing_ModifyHud);
+			if(WidgetTable != nullptr)
+			{
+				UClass* WidgetClass = LoadClass<USDKUserWidget>(nullptr, *WidgetTable->WidgetBluePrintPath.ToString());
+				if (IsValid(WidgetClass))
+				{
+					HUDComponent->SetWidgetClass(WidgetClass);
+					HUDComponent->SetVisibility(true);
+				
+					SetVisibilityModifyWidget(false);
+				}
+			}
+		}
+	}
 }
 
 void ASDKPreviewFurniture::ApplyPreviewGroupingTransform()
