@@ -3,29 +3,27 @@
 
 #include "Housing/SDKHousingModifyWidget.h"
 
-#include "Character/SDKHUD.h"
-#include "Share/SDKHelper.h"
-#include "Object/SDKFurniture.h"
-#include "UI/SDKButtonParam.h"
-#include "UI/SDKWidgetParam.h"
-#include "UI/SDKHousingWidget.h"
-#include "Character/SDKLobbyController.h"
-#include "Object/SDKPreviewFurniture.h"
-
 #include "Components/Border.h"
 #include "Components/Overlay.h"
 #include "Components/ScaleBox.h"
 
+#include "Character/SDKHUD.h"
+#include "Object/SDKFurniture.h"
+#include "Object/SDKPreviewFurniture.h"
+#include "UI/SDKButtonParam.h"
+#include "UI/SDKWidgetParam.h"
+#include "UI/SDKHousingWidget.h"
+
 
 USDKHousingModifyWidget::USDKHousingModifyWidget()
-	: WidgetScale(1.f)
+: WidgetScale(1.f)
 {
 
 }
 
-void USDKHousingModifyWidget::NativeConstruct()
+void USDKHousingModifyWidget::CreateUIPorcess()
 {
-	Super::NativeConstruct();
+	Super::CreateUIProcess();
 
 	RotationResult = true;
 
@@ -59,23 +57,23 @@ void USDKHousingModifyWidget::InitTextSetting()
 void USDKHousingModifyWidget::SetModifyButtonParam(USDKButtonParam* pButtonParam, EModifyType eType)
 {
 	USDKWidgetParam* pWidgetParam = pButtonParam->GetClickedParam();
-	if(pWidgetParam == nullptr)
+	if(!IsValid(pWidgetParam))
 	{
 		USDKWidgetParamInt32* pNewParamInt = NewObject<USDKWidgetParamInt32>(this, USDKWidgetParamInt32::StaticClass());
-		if(pNewParamInt == nullptr)
-			return;
-
-		pNewParamInt->SetValue((int32)eType);
-		pButtonParam->SetClickedParam(pNewParamInt);
-		pButtonParam->OnClickedParam.AddDynamic(this, &USDKHousingModifyWidget::OnClickedParamButton);
+		if(IsValid(pNewParamInt))
+		{
+			pNewParamInt->SetValue((int32)eType);
+			pButtonParam->SetClickedParam(pNewParamInt);
+			pButtonParam->OnClickedParam.AddDynamic(this, &USDKHousingModifyWidget::OnClickedParamButton);
+		}
 	}
 	else
 	{
 		USDKWidgetParamInt32* pParamInt = Cast<USDKWidgetParamInt32>(pWidgetParam);
-		if(pParamInt == nullptr)
-			return;
-
-		pParamInt->SetValue((int32)eType);
+		if(IsValid(pParamInt))
+		{
+			pParamInt->SetValue(static_cast<int32>(eType));
+		}
 	}
 }
 
@@ -84,58 +82,58 @@ void USDKHousingModifyWidget::SetButtonIsEnable(bool bEnable, EModifyType eType)
 	switch(eType)
 	{
 	case EModifyType::Save:
-		if(SDKButtonSave == nullptr)
-			return;
-
-		SDKButtonSave->SetIsEnabled(bEnable);
-		return;
+		if(IsValid(SDKButtonSave))
+		{
+			SDKButtonSave->SetIsEnabled(bEnable);
+		}
+		break;
 
 	case EModifyType::Cancel:
-		if(SDKButtonCancel == nullptr)
-			return;
-
-		SDKButtonCancel->SetIsEnabled(bEnable);
-		return;
+		if(IsValid(SDKButtonCancel))
+		{
+			SDKButtonCancel->SetIsEnabled(bEnable);
+		}
+		break;
 
 	case EModifyType::Ok:
-		if(SDKButtonOk == nullptr)
-			return;
-
-		SDKButtonOk->SetIsEnabled(bEnable);
-		return;
+		if(IsValid(SDKButtonOk))
+		{
+			SDKButtonOk->SetIsEnabled(bEnable);
+		}
+		break;
 
 	case EModifyType::Rotation:
-		if(SDKButtonRotation == nullptr)
-			return;
-
-		SDKButtonRotation->SetIsEnabled(bEnable);
-		return;
+		if(IsValid(SDKButtonRotation))
+		{
+			SDKButtonRotation->SetIsEnabled(bEnable);
+		}
+		break;
 
 	default:
-		return;
+		break;
 	}
 }
 
 void USDKHousingModifyWidget::SetWidgetScale(int32 iSize)
 {
-	if(ScaleBoxWidget == nullptr)
-		return;
-
-	ScaleBoxWidget->SetUserSpecifiedScale(WidgetScale + (0.4f * iSize));
+	if(IsValid(ScaleBoxWidget))
+	{
+		ScaleBoxWidget->SetUserSpecifiedScale(WidgetScale + (0.4f * iSize));	
+	}
 }
 
 void USDKHousingModifyWidget::SetActiveBorderBG(bool bActive)
 {
-	if(BorderBG == nullptr)
-		return;
-
-	if(bActive)
+	if(IsValid(BorderBG))
 	{
-		BorderBG->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		BorderBG->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		if(bActive)
+		{
+			SetWidgetVisibility(BorderBG, ESlateVisibility::Visible);
+		}
+		else
+		{
+			SetWidgetVisibility(BorderBG, ESlateVisibility::SelfHitTestInvisible);
+		}
 	}
 }
 
@@ -153,16 +151,16 @@ void USDKHousingModifyWidget::SetVisibilityWidget(bool bVisible)
 
 void USDKHousingModifyWidget::SetVisibilityOverlayButtons(bool bVisible)
 {
-	if(OverlayButtons == nullptr)
-		return;
-
-	if(bVisible)
+	if(IsValid(OverlayButtons))
 	{
-		OverlayButtons->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		OverlayButtons->SetVisibility(ESlateVisibility::Collapsed);
+		if(bVisible)
+		{
+			SetWidgetVisibility(OverlayButtons, ESlateVisibility::SelfHitTestInvisible);
+		}
+		else
+		{
+			SetWidgetVisibility(OverlayButtons, ESlateVisibility::Collapsed);
+		}
 	}
 }
 
@@ -173,57 +171,62 @@ bool USDKHousingModifyWidget::CheckMovablePickingFurniture()
 
 void USDKHousingModifyWidget::CompleteMoveModifyFurniture(bool bComplete)
 {
-	auto pHousingWidget = GetSDKHousingWidget();
-	if(pHousingWidget == nullptr)
-		return;
-
-	pHousingWidget->CompleteMoveModifyFurniture(bComplete);
+	USDKHousingWidget* HousingWidget = GetSDKHousingWidget();
+	if(IsValid(HousingWidget))
+	{
+		HousingWidget->CompleteMoveModifyFurniture(bComplete);
+	}
 }
 
 void USDKHousingModifyWidget::OnClickedParamButton(USDKWidgetParam* param)
 {
-	if(param == nullptr)
-		return;
-
-	USDKWidgetParamInt32* pParamInt = Cast<USDKWidgetParamInt32>(param);
-	if(pParamInt == nullptr)
-		return;
-
-	auto pHousingWidget = GetSDKHousingWidget();
-	if(pHousingWidget == nullptr)
-		return;
-
-	switch((EModifyType)pParamInt->GetValue())
+	if(!IsValid(param))
 	{
-	case EModifyType::Save:
-		pHousingWidget->SavedModifyFurniture();
-		break;
-
-	case EModifyType::Cancel:
-		pHousingWidget->CompleteModifyFurniture(false);
-		break;
-
-	case EModifyType::Ok:
-		pHousingWidget->CompleteModifyFurniture(RotationResult);
-		break;
-
-	case EModifyType::Rotation:
-		RotationResult = pHousingWidget->RotatorModifyFurniture();
-		break;
-
-	default:
 		return;
+	}
+
+	USDKWidgetParamInt32* ParamInt = Cast<USDKWidgetParamInt32>(param);
+	if(IsValid(ParamInt))
+	{
+		USDKHousingWidget* HousingWidget = GetSDKHousingWidget();
+		if(IsValid(HousingWidget))
+		{
+			switch(static_cast<EModifyType>(ParamInt->GetValue()))
+			{
+			case EModifyType::Save:
+				HousingWidget->SavedModifyFurniture();
+				break;
+		
+			case EModifyType::Cancel:
+				HousingWidget->CompleteModifyFurniture(false);
+				break;
+		
+			case EModifyType::Ok:
+				HousingWidget->CompleteModifyFurniture(RotationResult);
+				break;
+		
+			case EModifyType::Rotation:
+				RotationResult = HousingWidget->RotatorModifyFurniture();
+				break;
+		
+			default:
+				break;
+			}
+		}
 	}
 }
 
 USDKHousingWidget* USDKHousingModifyWidget::GetSDKHousingWidget() const
 {
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetOwningPlayer()->GetHUD());
-	if(SDKHUD == nullptr)
-		return nullptr;
+	if(IsValid(SDKHUD))
+	{
+		USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
+		if(IsValid(MainWidget))
+		{
+			return Cast<USDKHousingWidget>(MainWidget);
+		}
+	}
 
-	if(SDKHUD->GetUI(EUI::Lobby_UIHousing) == nullptr)
-		return nullptr;
-
-	return Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
+	return nullptr;
 }
