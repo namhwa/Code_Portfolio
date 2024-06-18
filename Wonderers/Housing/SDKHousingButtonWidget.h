@@ -6,7 +6,11 @@
 #include "UI/SDKUserWidget.h"
 #include "SDKHousingButtonWidget.generated.h"
 
+class UImage;
+class USizeBox;
+class USDKCheckBoxParam;
 class USDKWidgetParam;
+
 UENUM(BlueprintType)
 enum class EHousingMenu : uint8
 {
@@ -15,10 +19,6 @@ enum class EHousingMenu : uint8
 	Save,
 	Max
 };
-
-class USizeBox;
-class UImage;
-class USDKCheckBoxParam;
 
 UCLASS()
 class ARENA_API USDKHousingButtonWidget : public USDKUserWidget
