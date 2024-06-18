@@ -4,16 +4,12 @@
 
 #include "Kismet/GameplayStatics.h"
 
-#include "GameMode/SDKLobbyState.h"
-
 #include "Character/SDKMyInfo.h"
 #include "Character/SDKPlayerState.h"
 #include "Character/SDKLobbyController.h"
 
-#include "Share/SDKHelper.h"
-#include "Engine/SDKGameInstance.h"
+#include "GameMode/SDKLobbyState.h"
 #include "Manager/SDKTableManager.h"
-#include "Manager/SDKLobbyServerManager.h"
 
 
 ASDKLobbyMode::ASDKLobbyMode()
@@ -27,7 +23,7 @@ void ASDKLobbyMode::InitGameState()
 	Super::InitGameState();
 
 	ASDKLobbyState* SDKLobbyState = Cast<ASDKLobbyState>(GameState);
-	if(SDKLobbyState != nullptr)
+	if(IsValid(SDKLobbyState))
 	{
 		SDKLobbyState->SetGameMode(EGameMode::Lobby);
 	}
@@ -50,7 +46,7 @@ void ASDKLobbyMode::ServerReadyComplete()
 	for(auto iter = GetWorld()->GetPlayerControllerIterator(); iter; ++iter)
 	{
 		ASDKLobbyController* LobbyController = Cast<ASDKLobbyController>(*iter);
-		if(LobbyController == nullptr)
+		if(!IsValid(LobbyController))
 		{
 			continue;
 		}
@@ -60,7 +56,7 @@ void ASDKLobbyMode::ServerReadyComplete()
 
 	// 게임 시작
 	ASDKGameState* SDKGameState = Cast<ASDKGameState>(GameState);
-	if (SDKGameState != nullptr)
+	if (IsValid(SDKGameState))
 	{
 		SDKGameState->OnGameStart();
 	}
@@ -71,11 +67,11 @@ void ASDKLobbyMode::SetPlayerData(const FServerSendData& SendData)
 	Super::SetPlayerData(SendData);
 
 	ASDKLobbyController* SDKLobbyController = Cast<ASDKLobbyController>(SendData.NewPlayer);
-	if(SDKLobbyController != nullptr)
+	if(IsValid(SDKLobbyController))
 	{
 		// 플레이어 시작 위치 선별
 		AActor* const StartSpot = FindPlayerStartCustom(SendData.NewPlayer);
-		if(StartSpot != nullptr)
+		if(IsValid(StartSpot))
 		{
 			// 영웅 스폰
 			SDKLobbyController->ServerSpawnHero(SendData.SelectHeroID, SendData.SelectSkinID, StartSpot->GetActorTransform());
@@ -87,8 +83,8 @@ void ASDKLobbyMode::LoadMyroomData()
 {
 	if(UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("Myroom"))
 	{
-		auto LobbyController = Cast<ASDKLobbyController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		if (LobbyController != nullptr)
+		ASDKLobbyController* LobbyController = Cast<ASDKLobbyController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (IsValid(LobbyController))
 		{
 			LobbyController->InitMyroomBuildingData();
 			LobbyController->InitMyroomTilesData(g_pMyInfo->GetHousingData().GetHousingLevel());
