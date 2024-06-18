@@ -2,9 +2,12 @@
 
 #include "Housing/SDKFurniture.h"
 
+#include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
 #include "Character/SDKHUD.h"
@@ -65,13 +68,6 @@ ASDKFurniture::ASDKFurniture()
 
 	CollsionSize = FVector(TILE_HALF);
 }
-
-#if WITH_EDITOR
-void ASDKFurniture::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-#endif
 
 void ASDKFurniture::BeginPlay()
 {
