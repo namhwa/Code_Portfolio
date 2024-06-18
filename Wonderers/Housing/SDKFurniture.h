@@ -20,10 +20,6 @@ class ARENA_API ASDKFurniture : public AActor
 public:
 	ASDKFurniture();
 
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-
 	// Begin Actor Interface
 	virtual void BeginPlay() override;
 	virtual void NotifyActorOnReleased(FKey ButtonReleased = EKeys::LeftMouseButton) override;
