@@ -3,16 +3,15 @@
 
 #include "Housing/SDKHousingButtonWidget.h"
 
-#include "Character/SDKHUD.h"
-#include "Share/SDKEnum.h"
-#include "Share/SDKHelper.h"
-#include "Manager/SDKTableManager.h"
-#include "UI/SDKCheckBoxParam.h"
-#include "UI/SDKHousingWidget.h"
-
 #include "Components/Image.h"
 #include "Components/SizeBox.h"
 #include "PaperSprite.h"
+
+#include "Character/SDKHUD.h"
+#include "Share/SDKEnum.h"
+#include "Manager/SDKTableManager.h"
+#include "UI/SDKCheckBoxParam.h"
+#include "UI/SDKHousingWidget.h"
 
 USDKHousingButtonWidget::USDKHousingButtonWidget()
 : bActive(true)
