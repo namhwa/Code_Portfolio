@@ -58,23 +58,23 @@ void USDKHousingModifyWidget::InitTextSetting()
 
 void USDKHousingModifyWidget::SetModifyButtonParam(USDKButtonParam* pButtonParam, EModifyType eType)
 {
-	USDKWidgetParam* pWidgetParam = pButtonParam->GetClickedParam();
-	if(!IsValid(pWidgetParam))
+	USDKWidgetParam* WidgetParam = pButtonParam->GetClickedParam();
+	if(!IsValid(WidgetParam))
 	{
-		USDKWidgetParamInt32* pNewParamInt = NewObject<USDKWidgetParamInt32>(this, USDKWidgetParamInt32::StaticClass());
-		if(IsValid(pNewParamInt))
+		USDKWidgetParamInt32* NewParamInt = NewObject<USDKWidgetParamInt32>(this, USDKWidgetParamInt32::StaticClass());
+		if(IsValid(NewParamInt))
 		{
-			pNewParamInt->SetValue((int32)eType);
-			pButtonParam->SetClickedParam(pNewParamInt);
+			NewParamInt->SetValue(static_cast<int32>(eType));
+			pButtonParam->SetClickedParam(NewParamInt);
 			pButtonParam->OnClickedParam.AddDynamic(this, &USDKHousingModifyWidget::OnClickedParamButton);
 		}
 	}
 	else
 	{
-		USDKWidgetParamInt32* pParamInt = Cast<USDKWidgetParamInt32>(pWidgetParam);
-		if(IsValid(pParamInt))
+		USDKWidgetParamInt32* ParamInt = Cast<USDKWidgetParamInt32>(pWidgetParam);
+		if(IsValid(ParamInt))
 		{
-			pParamInt->SetValue(static_cast<int32>(eType));
+			ParamInt->SetValue(static_cast<int32>(eType));
 		}
 	}
 }
