@@ -2,26 +2,19 @@
 
 #include "Housing/SDKLobbyController.h"
 
-#include "Components/CapsuleComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Components/Button.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Character/SDKHUD.h"
 #include "Character/SDKMyInfo.h"
-#include "Character/SDKCharacter.h"
-#include "Character/SDKPlayerState.h"
 #include "Character/SDKPlayerCharacter.h"
-#include "Character/SDKCharacterWidgetComponent.h"
 
 #include "Engine/SDKGameInstance.h"
-#include "GameMode/SDKGameState.h"
-
-#include "Housing/SDKLobbyMode.h
-"
+#include "Housing/SDKLobbyMode.h"
 #include "Manager/SDKTableManager.h"
 #include "Manager/SDKCheatManager.h"
 #include "Manager/SDKLobbyServerManager.h"
+
 #include "Object/SDKFurniture.h"
 
 #include "Share/SDKHelper.h"
@@ -49,14 +42,14 @@ bool ASDKLobbyController::InputTouch(uint32 Handle, ETouchType::Type Type, const
 	bool bResult = Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr)
-		return bResult;
-
-	if(SDKHUD->IsOpenUI(EUI::Lobby_UIHousing) == true)
+	if(IsValid(SDKHUD))
 	{
-		InputTouchHousing(Type, TouchpadIndex);
+		if(SDKHUD->IsOpenUI(EUI::Lobby_UIHousing))
+		{
+			InputTouchHousing(Type, TouchpadIndex);
+		}
 	}
-
+	
 	return bResult;
 }
 
@@ -65,18 +58,18 @@ void ASDKLobbyController::ClientAttachHud()
 	Super::ClientAttachHud();
 
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr)
-		return;
-
-	SDKHUD->OpenUI(EUI::Top_TopBar);
-
-	if(UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("Myroom"))
+	if(IsValid(SDKHUD))
 	{
-		SDKHUD->OpenUIBackground(EUI::Lobby_Main);
-	}
-	else
-	{
-		SDKHUD->OpenUIBackground(EUI::CharacterSelect_Main);
+		SDKHUD->OpenUI(EUI::Top_TopBar);
+	
+		if(UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("Myroom"))
+		{
+			SDKHUD->OpenUIBackground(EUI::Lobby_Main);
+		}
+		else
+		{
+			SDKHUD->OpenUIBackground(EUI::CharacterSelect_Main);
+		}
 	}
 }
 
@@ -114,69 +107,82 @@ void ASDKLobbyController::SetInputGameMode(bool bGameOnly)
 void ASDKLobbyController::InputTouchHousing(ETouchType::Type Type, uint32 TouchpadIndex)
 {
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
-	if(HousingWidget == nullptr)
-		return;
-
-	ETouchIndex::Type TouchIndex = (ETouchIndex::Type)TouchpadIndex;
-	EHousingState eState = HousingWidget->GetHousingState();
-
-	switch(Type)
+	if(IsValid(SDKHUD))
 	{
-	case ETouchType::Began:
-	{
-		if(eState != EHousingState::ModifyModeState && eState != EHousingState::PutModeState)
-			return;
-
-		bool bMovable = HousingWidget->StartMovablePreviewFurniture(TouchIndex);
-		if(bMovable == false)
-			return;
-
-		if(eState == EHousingState::ModifyModeState)
+		USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
+		if(IsValid(MainWidget))
 		{
-			SetIsMovingFurniture(bMovable);
-		}
-
-		HousingWidget->UpdatePreviewFurniture(TouchIndex);
-	}
-	break;
-	case ETouchType::Moved:
-	{
-		if(eState != EHousingState::ModifyMovableState && eState != EHousingState::PutMovableState)
-			return;
-
-		HousingWidget->UpdatePreviewFurniture(TouchIndex);
-	}
-	break;
-	case ETouchType::Ended:
-	{
-		if(eState == EHousingState::ModifyMovableState)
-		{
-			HousingWidget->CompleteMoveModifyFurniture(IsPutableState);
-		}
-		else if(eState == EHousingState::PutMovableState)
-		{
-			EFurnitureType type = HousingWidget->GetPreviewFurniture()->GetFurnitureType();
-			if(type == EFurnitureType::Wall || type == EFurnitureType::Floor)
+			USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(MainWidget);
+			if(IsValid(HousingWidget))
 			{
-				ApplyWallpaperFlooring();
-			}
-			else
-			{
-				HousingWidget->CompletePutFurniture(IsPutableState);
+				ETouchIndex::Type TouchIndex = (ETouchIndex::Type)TouchpadIndex;
+				EHousingState eState = HousingWidget->GetHousingState();
+			
+				switch(Type)
+				{
+				case ETouchType::Began:
+				{
+					if(eState != EHousingState::ModifyModeState && eState != EHousingState::PutModeState)
+					{
+						return;
+					}
+			
+					bool bMovable = HousingWidget->StartMovablePreviewFurniture(TouchIndex);
+					if(!bMovable)
+					{
+						return;
+					}
+			
+					if(eState == EHousingState::ModifyModeState)
+					{
+						SetIsMovingFurniture(bMovable);
+					}
+			
+					HousingWidget->UpdatePreviewFurniture(TouchIndex);
+				}
+				break;
+				case ETouchType::Moved:
+				{
+					if(eState != EHousingState::ModifyMovableState && eState != EHousingState::PutMovableState)
+					{
+						return;
+					}
+			
+					HousingWidget->UpdatePreviewFurniture(TouchIndex);
+				}
+				break;
+				case ETouchType::Ended:
+				{
+					if(eState == EHousingState::ModifyMovableState)
+					{
+						HousingWidget->CompleteMoveModifyFurniture(IsPutableState);
+					}
+					else if(eState == EHousingState::PutMovableState)
+					{
+						EFurnitureType type = HousingWidget->GetPreviewFurniture()->GetFurnitureType();
+						if(type == EFurnitureType::Wall || type == EFurnitureType::Floor)
+						{
+							ApplyWallpaperFlooring();
+						}
+						else
+						{
+							HousingWidget->CompletePutFurniture(IsPutableState);
+						}
+					}
+				}
+				break;
+				default:
+					break;
+				}
 			}
 		}
-	}
-	break;
-	default:
-		break;
 	}
 }
 
 //*** MyRoom ***************************************************************************************************************************************************************//
 ASDKFurniture* ASDKLobbyController::GetmapFurnitureByUniqueID(const FString strUniqueID) const
 {
-	if(mapFurnitures.Contains(strUniqueID) == true)
+	if(mapFurnitures.Contains(strUniqueID))
 	{
 		return mapFurnitures[strUniqueID];
 	}
@@ -186,7 +192,7 @@ ASDKFurniture* ASDKLobbyController::GetmapFurnitureByUniqueID(const FString strU
 
 FVector ASDKLobbyController::GetRoomStartLocation(int32 iRoomIndex) const
 {
-	if(mapBaseLocation.Contains(iRoomIndex) == true)
+	if(mapBaseLocation.Contains(iRoomIndex))
 	{
 		return mapBaseLocation[iRoomIndex];
 	}
@@ -207,7 +213,7 @@ void ASDKLobbyController::InitMyroomBuildingData()
 	for(auto& iter : LevelActor)
 	{
 		ASDKFurniture* LevelFurniture = Cast<ASDKFurniture>(iter);
-		if(LevelFurniture == nullptr)
+		if(!IsValid(LevelFurniture))
 		{
 			continue;
 		}
@@ -261,7 +267,9 @@ void ASDKLobbyController::SaveMyroomHousingData()
 {
 	CHousingData& HousingData = g_pMyInfo->GetHousingData();
 	if(HousingData.GetArrangedAllItemCount() <= 0)
+	{
 		return;
+	}
 
 	TArray<CFurnitureData> SendData;
 	if(HousingData.GetmapWallpaper().Num() > 0)
@@ -296,53 +304,47 @@ void ASDKLobbyController::LoadMyroomHousingData()
 	// 서버에서 받은 정보 셋팅
 	for(auto& iter : g_pMyInfo->GetHousingData().GetmapWallpaper())
 	{
-		if(mapObjectWalls.Contains(iter.Key) == false)
+		if(!mapObjectWalls.Contains(iter.Key))
 		{
 			continue;
 		}
 
-		auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(iter.Value.TableID);
+		FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(iter.Value.TableID);
 		if(FurnitureTable != nullptr)
 		{
-			if(FurnitureTable->MaterialPath.GetUniqueID().IsAsset() == true)
+			auto FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
+			if (FurnitureMaterial)
 			{
-				auto FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
-				if (FurnitureMaterial)
-				{
-					mapObjectWalls[iter.Key]->SetStaticMeshMaterial(FurnitureMaterial);
-				}
-				else
-				{
-					FString Str = FString::Printf(TEXT("Invalid FurnitureTable MaterialPath : (%s)"), *iter.Value.TableID);
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Str, true, FVector2D(3.f, 3.f));
-				}
+				mapObjectWalls[iter.Key]->SetStaticMeshMaterial(FurnitureMaterial);
+			}
+			else
+			{
+				FString Str = FString::Printf(TEXT("Invalid FurnitureTable MaterialPath : (%s)"), *iter.Value.TableID);
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Str, true, FVector2D(3.f, 3.f));
 			}
 		}
 	}
 
 	for(auto& iter : g_pMyInfo->GetHousingData().GetmapFlooring())
 	{
-		if(mapObjectFloors.Contains(iter.Key) == false)
+		if(!mapObjectFloors.Contains(iter.Key))
 		{
 			continue;
 		}
 
-		auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(iter.Value.TableID);
+		FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(iter.Value.TableID);
 		if(FurnitureTable != nullptr)
 		{
-			if (FurnitureTable->MaterialPath.GetUniqueID().IsAsset() == true)
+			auto FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
+			if (FurnitureMaterial)
 			{
-				auto FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
-				if (FurnitureMaterial)
-				{
-					mapObjectFloors[iter.Key]->SetStaticMeshMaterial(FurnitureMaterial);
-				}
-				else
-				{
-					FString Str = FString::Printf(TEXT("Invalid FurnitureTable MaterialPath : (%s)"), *FurnitureTable->MaterialPath.ToString());
-					UE_LOG(LogGame, Warning, TEXT("Invalid FurnitureTable MaterialPath : (%s)"), *iter.Value.TableID);
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Str, true, FVector2D(3.f, 3.f));
-				}
+				mapObjectFloors[iter.Key]->SetStaticMeshMaterial(FurnitureMaterial);
+			}
+			else
+			{
+				FString Str = FString::Printf(TEXT("Invalid FurnitureTable MaterialPath : (%s)"), *FurnitureTable->MaterialPath.ToString());
+				UE_LOG(LogGame, Warning, TEXT("Invalid FurnitureTable MaterialPath : (%s)"), *iter.Value.TableID);
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Str, true, FVector2D(3.f, 3.f));
 			}
 		}
 	}
@@ -368,7 +370,7 @@ void ASDKLobbyController::RevertMyroomHousignData()
 void ASDKLobbyController::ApplayMyroomPresetData(FString PresetID)
 {
 	TMap<FName, uint8*> mapBasicTableRow = USDKTableManager::Get()->GetRowMapMyroomBasic();
-	auto PresetTable = USDKTableManager::Get()->FindTableMyroomPreset(PresetID);
+	FS_MyroomPreset* PresetTable = USDKTableManager::Get()->FindTableMyroomPreset(PresetID);
 	if(PresetTable == nullptr)
 	{
 		return;
@@ -379,15 +381,19 @@ void ASDKLobbyController::ApplayMyroomPresetData(FString PresetID)
 	// Wall & Floor
 	for(auto& iterBasic : mapBasicTableRow)
 	{
-		auto BasicTable = reinterpret_cast<FS_MyroomBasic*>(iterBasic.Value);
+		FS_MyroomBasic* BasicTable = reinterpret_cast<FS_MyroomBasic*>(iterBasic.Value);
 		if(BasicTable == nullptr)
+		{
 			continue;
+		}
 
 		if(BasicTable->RoomIndex > iRoomLevel)
+		{
 			continue;
+		}
 
 		FString strTableID = FString();
-		if(BasicTable->Type == true)
+		if(BasicTable->Type)
 		{
 			strTableID = FString::FromInt(PresetTable->Floors[BasicTable->RoomIndex - 1]);
 			const CItemData* pFloorItemData = g_pMyInfo->GetInvenDataList().GetItemData(strTableID);
@@ -406,7 +412,7 @@ void ASDKLobbyController::ApplayMyroomPresetData(FString PresetID)
 	for(int32 idx = 0; idx < PresetTable->PropID.Num(); ++idx)
 	{
 		FString strTableID = FString::FromInt(PresetTable->PropID[idx]);
-		auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(strTableID);
+		FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(strTableID);
 		if(FurnitureTable == nullptr)
 		{
 			continue;
@@ -432,33 +438,25 @@ void ASDKLobbyController::ApplayMyroomPresetData(FString PresetID)
 		FString UniqueID = FSDKHelpers::GetNewUniqueID();
 		const CItemData* pItemData = g_pMyInfo->GetInvenDataList().GetItemData(strTableID);
 		if(pItemData == nullptr)
+		{	
 			continue;
+		}
 
 		CFurnitureData tData = CFurnitureData(PresetTable->PropRoom[idx], strTableID, PresetTable->PropPosition[idx], PresetTable->PropRotate[idx]);
-
 		g_pMyInfo->GetHousingData().ApplyFurniture(UniqueID, tData);
 	}
 }
 
 void ASDKLobbyController::SpawnLoadFurniture(const FString strUniqueID, const CFurnitureData tFurnitureData)
 {
-	auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(tFurnitureData.TableID);
+	FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(tFurnitureData.TableID);
 	if(FurnitureTable == nullptr)
 	{
 		return;
 	}
 
-	UClass* PartsClass = nullptr;
-	if (FurnitureTable->PartsClass.GetUniqueID().IsAsset() == true)
-	{
-		PartsClass = LoadClass<ASDKFurniture>(nullptr, *FurnitureTable->PartsClass.ToString());
-	}
-	else
-	{
-		PartsClass = ASDKFurniture::StaticClass();
-	}
-
-	if(PartsClass != nullptr)
+	UClass* PartsClass = LoadClass<ASDKFurniture>(nullptr, *FurnitureTable->PartsClass.ToString());
+	if(IsValid(PartsClass))
 	{
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -469,7 +467,7 @@ void ASDKLobbyController::SpawnLoadFurniture(const FString strUniqueID, const CF
 		tRotator.Yaw -= 45.f;
 
 		ASDKFurniture* ObjectFurniture = GetWorld()->SpawnActor<ASDKFurniture>(PartsClass, vLocation, tRotator, SpawnInfo);
-		if(ObjectFurniture != nullptr)
+		if(IsValid(ObjectFurniture))
 		{
 			FVector vSize = FurnitureTable->Size;
 			float fYaw = ObjectFurniture->GetActorRotation().Yaw;
@@ -515,11 +513,15 @@ void ASDKLobbyController::CheckDecorationOnFurniture(int32 iRoomKey, FString str
 
 	for(auto& iterID : UniqueIDs)
 	{
-		if(mapFurnitures.Contains(iterID) == false)
+		if(!mapFurnitures.Contains(iterID) || !IsValid(mapFurnitures[iterID]))
+		{
 			continue;
+		}
 
 		if(mapFurnitures[iterID]->GetFurnitureType() != EFurnitureType::Decoration)
+		{
 			continue;
+		}
 
 		ReturnDecorations.AddUnique(mapFurnitures[iterID]);
 	}
@@ -536,7 +538,7 @@ FVector ASDKLobbyController::CalcPickingTileIndex(int32 iRoomKey, FVector vMouse
 	vPoint = vPoint.RotateAngleAxis(-45.f, FVector::UpVector);
 	vPoint = FVector(vPoint.X / -FMath::Sqrt(2.f), vPoint.Y / FMath::Sqrt(2.f), vPoint.Z / FMath::Sqrt(2.f)) / TILE_INTERVAL;
 
-	if(bIsInt == false)
+	if(!bIsInt)
 	{
 		return vPoint;
 	}
@@ -635,7 +637,7 @@ void ASDKLobbyController::RemoveMyroomTileData(int32 iRoomIndex, FVector vIndex,
 
 ASDKFurniture* ASDKLobbyController::PutFurniture(ASDKFurniture* PreviewObject)
 {
-	if(PreviewObject == nullptr || PreviewObject->GetFurnitureID().IsEmpty() == true)
+	if(!IsValid(PreviewObject) || PreviewObject->GetFurnitureID().IsEmpty())
 	{
 		return nullptr;
 	}
@@ -644,27 +646,17 @@ ASDKFurniture* ASDKLobbyController::PutFurniture(ASDKFurniture* PreviewObject)
 	FVector vSize = PreviewObject->GetFurnitureSize();
 	FVector vIndex = PreviewObject->GetSavedIndex();
 
-	auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(TableID);
+	FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(TableID);
 	if(FurnitureTable != nullptr)
 	{
-		UClass* PartsClass = nullptr;
-		if(FurnitureTable->PartsClass.GetUniqueID().IsAsset() == true)
-		{
-			PartsClass = LoadClass<ASDKFurniture>(nullptr, *FurnitureTable->PartsClass.ToString());
-		}
-
-		if (PartsClass == nullptr)
-		{
-			PartsClass = ASDKFurniture::StaticClass();
-		}
-
-		if(PartsClass != nullptr)
+		UClass* PartsClass = LoadClass<ASDKFurniture>(nullptr, *FurnitureTable->PartsClass.ToString());
+		if(IsValid(PartsClass))
 		{
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 			ASDKFurniture* newFurniture = GetWorld()->SpawnActor<ASDKFurniture>(PartsClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnInfo);
-			if(newFurniture != nullptr)
+			if(IsValid(newFurniture))
 			{
 				FString strNewUniqueID = FSDKHelpers::GetNewUniqueID();
 				newFurniture->SetUniqueID(strNewUniqueID);
@@ -695,7 +687,7 @@ ASDKFurniture* ASDKLobbyController::PutFurniture(ASDKFurniture* PreviewObject)
 void ASDKLobbyController::CompleteModifyFurniture(ASDKFurniture* pModifyFurniture, ASDKFurniture* pPreviewFurniture, bool bIsDeco)
 {
 	// 전체 수정 
-	if(pModifyFurniture == nullptr || mapFurnitures.FindKey(pModifyFurniture) == nullptr)
+	if(!IsValid(pModifyFurniture) || mapFurnitures.FindKey(pModifyFurniture) == nullptr)
 	{
 		return;
 	}
@@ -720,7 +712,7 @@ void ASDKLobbyController::CompleteModifyFurniture(ASDKFurniture* pModifyFurnitur
 	}
 
 	// 새 정보로 저장
-	if(bIsDeco == true)
+	if(bIsDeco)
 	{
 		FVector vSize = pPreviewFurniture->GetFurnitureSize();
 		float fRotatorYaw = pPreviewFurniture->GetActorRotation().Yaw;
@@ -764,57 +756,57 @@ void ASDKLobbyController::CompleteModifyFurniture(ASDKFurniture* pModifyFurnitur
 void ASDKLobbyController::ApplyWallpaperFlooring()
 {
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr || SDKHUD->IsOpenUI(EUI::Lobby_UIHousing) == false)
+	if(!IsValid(SDKHUD) || !SDKHUD->IsOpenUI(EUI::Lobby_UIHousing))
 	{
 		ClientApplyWallpaperFlooring(false);
 		return;
 	}
 
-
-	USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
-	if(HousingWidget == nullptr)
+	USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
+	if(!IsValid(MainWidget))
 	{
 		ClientApplyWallpaperFlooring(false);
 		return;
 	}
 
-	ASDKFurniture* PrevObject = HousingWidget->GetPreviewFurniture();
-	FHitResult HitResult = HousingWidget->GetPreviewHitResult();
-
-	if(PrevObject == nullptr || HitResult.Actor == nullptr)
+	USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(MainWidget);
+	if(IsValid(HousingWidget))
 	{
-		ClientApplyWallpaperFlooring(false);
-		return;
-	}
-
-	// 충돌 오브젝트 유무 검사
-	ASDKFurniture* HitActor = Cast<ASDKFurniture>(HitResult.Actor);
-	auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(PrevObject->GetFurnitureID());
-	if(HitActor == nullptr || FurnitureTable == nullptr)
-	{
-		ClientApplyWallpaperFlooring(false);
-		return;
-	}
-
-	// 벽지나 바닥재 적용
-	bool bResult = false;
-	FString HitActorName;
-	FString PreTableID = TEXT("");
-	EFurnitureType eType = FurnitureTable->Type;
-
-	if(eType == EFurnitureType::Wall)
-	{
-		if(mapObjectWalls.FindKey(HitActor) != nullptr && HitResult.GetComponent()->GetCollisionObjectType() == COLLISION_WALL)
+		ASDKFurniture* PrevObject = HousingWidget->GetPreviewFurniture();
+		FHitResult HitResult = HousingWidget->GetPreviewHitResult();
+	
+		if(!IsValid(PrevObject) || !IsValid(HitResult.Actor))
 		{
-			if (FurnitureTable->MaterialPath.GetUniqueID().IsAsset() == true)
+			ClientApplyWallpaperFlooring(false);
+			return;
+		}
+	
+		// 충돌 오브젝트 유무 검사
+		ASDKFurniture* HitActor = Cast<ASDKFurniture>(HitResult.Actor);
+		auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(PrevObject->GetFurnitureID());
+		if(!IsValid(HitActor) || FurnitureTable == nullptr)
+		{
+			ClientApplyWallpaperFlooring(false);
+			return;
+		}
+	
+		// 벽지나 바닥재 적용
+		bool bResult = false;
+		FString HitActorName;
+		FString PreTableID = TEXT("");
+		EFurnitureType eType = FurnitureTable->Type;
+	
+		if(eType == EFurnitureType::Wall)
+		{
+			if(mapObjectWalls.FindKey(HitActor) != nullptr && HitResult.GetComponent()->GetCollisionObjectType() == COLLISION_WALL)
 			{
-				auto FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
+				UMaterialInterface* FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
 				if (FurnitureMaterial)
 				{
 					bResult = true;
 					HitActorName = *mapObjectWalls.FindKey(HitActor);
 					CFurnitureData WallData = g_pMyInfo->GetHousingData().GetWallpaperByKey(HitActorName);
-
+	
 					HitActor->SetStaticMeshMaterial(FurnitureMaterial);
 				}
 				else
@@ -824,14 +816,11 @@ void ASDKLobbyController::ApplyWallpaperFlooring()
 				}
 			}
 		}
-	}
-	else if(eType == EFurnitureType::Floor)
-	{
-		if(mapObjectFloors.FindKey(HitActor) != nullptr && HitResult.GetComponent()->GetCollisionObjectType() == COLLISION_FLOOR)
+		else if(eType == EFurnitureType::Floor)
 		{
-			if (FurnitureTable->MaterialPath.GetUniqueID().IsAsset() == true)
+			if(mapObjectFloors.FindKey(HitActor) != nullptr && HitResult.GetComponent()->GetCollisionObjectType() == COLLISION_FLOOR)
 			{
-				auto FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
+				UMaterialInterface* FurnitureMaterial = LoadObject<UMaterialInterface>(nullptr, *FurnitureTable->MaterialPath.ToString());
 				if (FurnitureMaterial)
 				{
 					bResult = true;
@@ -847,18 +836,17 @@ void ASDKLobbyController::ApplyWallpaperFlooring()
 				}
 			}
 		}
+	
+		g_pMyInfo->GetHousingData().ApplyFurniture(HitActorName, CFurnitureData(PrevObject->GetFurnitureID(), HitActorName));
+		g_pMyInfo->GetHousingData().SetIsModifiedData(true);
+	
+		ClientApplyWallpaperFlooring(bResult, PrevObject->GetFurnitureID(), PreTableID);
 	}
-
-	// g_pMyInfo->ApplyWallpaperFlooring(eType, CFurnitureData(PrevObject->GetFurnitureID(), HitActorName));
-	g_pMyInfo->GetHousingData().ApplyFurniture(HitActorName, CFurnitureData(PrevObject->GetFurnitureID(), HitActorName));
-	g_pMyInfo->GetHousingData().SetIsModifiedData(true);
-
-	ClientApplyWallpaperFlooring(bResult, PrevObject->GetFurnitureID(), PreTableID);
 }
 
 void ASDKLobbyController::SaveFurniture(ASDKFurniture* SavedObject)
 {
-	if(SavedObject == nullptr || mapFurnitures.FindKey(SavedObject) == nullptr)
+	if(!IsValid(SavedObject) || mapFurnitures.FindKey(SavedObject) == nullptr)
 	{
 		return;
 	}
@@ -881,133 +869,135 @@ void ASDKLobbyController::SaveFurniture(ASDKFurniture* SavedObject)
 void ASDKLobbyController::ClearMyroomAllFurnitureData()
 {
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr)
-		return;
-
-	auto HousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
-	if(HousingWidget == nullptr)
+	if(IsValid(SDKHUD))
 	{
-		return;
-	}
-
-	for(auto& iter : mapFurnitures)
-	{
-		if(iter.Value == nullptr)
+		USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
+		if(IsValid(MainWidget))
 		{
-			continue;
+			USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(MainWidget);
+			if(IsValid(HousingWidget))
+			{
+				for(auto& iter : mapFurnitures)
+				{
+					if(IsValid(iter.Value))
+					{
+						continue;
+					}
+			
+					// 이전 인덱스의 타일 값 제거
+					RemoveMyroomTileData(iter.Value->GetArrangedRoomIndex(), iter.Value->GetSavedIndex(), iter.Value->GetFurnitureSize());
+			
+					// 하우징 가구 리스트에 추가
+					HousingWidget->SetFurnitureCount(iter.Value->GetFurnitureID(), 1);
+			
+					// 서버 정보 제거
+					g_pMyInfo->GetHousingData().RemoveFurniture(iter.Value->GetUniqueID());
+			
+					// 저장하려는 가구 제거
+					iter.Value->SetLifeSpan(0.01f);
+					iter.Value = nullptr;
+				}
+			
+				mapFurnitures.Empty();
+				g_pMyInfo->GetHousingData().SetIsModifiedData(true);
+			}
 		}
-
-		// 이전 인덱스의 타일 값 제거
-		RemoveMyroomTileData(iter.Value->GetArrangedRoomIndex(), iter.Value->GetSavedIndex(), iter.Value->GetFurnitureSize());
-
-		// 하우징 가구 리스트에 추가
-		HousingWidget->SetFurnitureCount(iter.Value->GetFurnitureID(), 1);
-
-		// 서버 정보 제거
-		g_pMyInfo->GetHousingData().RemoveFurniture(iter.Value->GetUniqueID());
-
-		// 저장하려는 가구 제거
-		iter.Value->SetLifeSpan(0.01f);
-		iter.Value = nullptr;
 	}
-
-	mapFurnitures.Empty();
-	g_pMyInfo->GetHousingData().SetIsModifiedData(true);
 }
 
 void ASDKLobbyController::InitHousingCamera(bool bOpen)
 {
 	ASDKPlayerCharacter* PlayerCharater = Cast<ASDKPlayerCharacter>(GetPawn());
-	if(PlayerCharater == nullptr)
+	if(IsValid(PlayerCharater))
 	{
-		return;
-	}
-
-	if(bOpen)
-	{
-		if(HousingViewCamera == nullptr)
+		if(bOpen)
 		{
-			SpawnHousingViewCamera();
+			if(!IsValid(HousingViewCamera))
+			{
+				SpawnHousingViewCamera();
+			}
+	
+			HousingViewCamera->SetActorRelativeLocation(PlayerCharater->GetActorLocation());
+			SetViewTargetWithBlend(HousingViewCamera, 0.5f);
 		}
-
-		HousingViewCamera->SetActorRelativeLocation(PlayerCharater->GetActorLocation());
-		SetViewTargetWithBlend(HousingViewCamera, 0.5f);
-	}
-	else
-	{
-		HousingViewCamera->RotateCamera(DefaultRotator);
-		SetViewTargetWithBlend(PlayerCharater, 0.5f);
+		else
+		{
+			if(IsValid(HousingViewCamera))
+			{
+				HousingViewCamera->RotateCamera(DefaultRotator);
+				SetViewTargetWithBlend(PlayerCharater, 0.5f);
+			}
+		}
 	}
 }
 
 void ASDKLobbyController::SpawnHousingViewCamera()
 {
-	if(HousingViewCamera != nullptr)
-		return;
-
-	auto ObjectBPTable = USDKTableManager::Get()->FindTableObjectBlueprint(EObjectBlueprint::SDKCamera);
-	if(ObjectBPTable == nullptr || ObjectBPTable->ObjectBlueprintPath.GetUniqueID().IsAsset() == false)
-		return;
-
-	auto CameraClass = LoadClass<AActor>(nullptr, *ObjectBPTable->ObjectBlueprintPath.ToString());
-	if (CameraClass)
+	if(IsValid(HousingViewCamera))
 	{
-		FActorSpawnParameters tSpawnParameter;
-		tSpawnParameter.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		return;
+	}
 
-		HousingViewCamera = GetWorld()->SpawnActor<ASDKCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator, tSpawnParameter);
-		if (HousingViewCamera != nullptr)
+	FS_ObjectBlueprint* ObjectBPTable = USDKTableManager::Get()->FindTableObjectBlueprint(EObjectBlueprint::SDKCamera);
+	if(ObjectBPTable != nullptr)
+	{
+		UClass* CameraClass = LoadClass<AActor>(nullptr, *ObjectBPTable->ObjectBlueprintPath.ToString());
+		if (IsValid(CameraClass))
 		{
-			HousingViewCamera->GetSpringArmComponent()->bEnableCameraRotationLag = true;
-			HousingViewCamera->GetSpringArmComponent()->CameraRotationLagSpeed = 3.f;
-			HousingViewCamera->GetSpringArmComponent()->CameraLagSpeed = 3.5f;
-			HousingViewCamera->GetSpringArmComponent()->CameraLagMaxDistance = 2800.f;
+			FActorSpawnParameters tSpawnParameter;
+			tSpawnParameter.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+			HousingViewCamera = GetWorld()->SpawnActor<ASDKCamera>(CameraClass, FVector::ZeroVector, FRotator::ZeroRotator, tSpawnParameter);
+			if (IsValid(HousingViewCamera))
+			{
+				HousingViewCamera->GetSpringArmComponent()->bEnableCameraRotationLag = true;
+				HousingViewCamera->GetSpringArmComponent()->CameraRotationLagSpeed = 3.f;
+				HousingViewCamera->GetSpringArmComponent()->CameraLagSpeed = 3.5f;
+				HousingViewCamera->GetSpringArmComponent()->CameraLagMaxDistance = 2800.f;
+			}
 		}
 	}
 }
 
 void ASDKLobbyController::SetLocationHousingCamera(FVector vLocation)
 {
-	if(HousingViewCamera == nullptr)
-		return;
-
-	HousingViewCamera->SetActorRelativeLocation(vLocation);
+	if (IsValid(HousingViewCamera))
+	{
+		HousingViewCamera->SetActorRelativeLocation(vLocation);
+	}
 }
 
 void ASDKLobbyController::MoveHousingViewCamera(FVector2D vMouseDelta)
 {
-	if(HousingViewCamera == nullptr)
-		return;
+	if (IsValid(HousingViewCamera))
+	{
 
-	//1500
-
-	HousingViewCamera->MoveCamera(FVector(vMouseDelta.Y, -vMouseDelta.X, 0.f));
+		HousingViewCamera->MoveCamera(FVector(vMouseDelta.Y, -vMouseDelta.X, 0.f));
+	}
 }
 
 void ASDKLobbyController::RotateHousingViewCamera(bool bIsTop)
 {
-	if(HousingViewCamera == nullptr)
-		return;
-
-	HousingViewCamera->RotateCamera(bIsTop ? TopDownRotator : DefaultRotator);
+	if (IsValid(HousingViewCamera))
+	{
+		HousingViewCamera->RotateCamera(bIsTop ? TopDownRotator : DefaultRotator);
+	}
 }
 
 //*** HUD ******************************************************************************************************************************************************************//
 void ASDKLobbyController::ClientToggleLobbyUIMenu(EUI eMenuType, bool bOpen)
 {
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr)
+	if(IsValid(SDKHUD))
 	{
-		return;
-	}
-
-	if(bOpen)
-	{
-		SDKHUD->OpenUI(eMenuType);
-	}
-	else
-	{
-		SDKHUD->CloseUI(eMenuType);
+		if(bOpen)
+		{
+			SDKHUD->OpenUI(eMenuType);
+		}
+		else
+		{
+			SDKHUD->CloseUI(eMenuType);
+		}
 	}
 }
 
@@ -1015,14 +1005,18 @@ void ASDKLobbyController::ClientApplyWallpaperFlooring(bool bResult, FString ID 
 {
 	// UI 적용
 	ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr || SDKHUD->GetUI(EUI::Lobby_Main) == nullptr)
-		return;
-
-	USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(SDKHUD->GetUI(EUI::Lobby_Main));
-	if(LobbyWidget == nullptr)
-		return;
-
-	LobbyWidget->NotifyAppliedWallpaperFlooring(bResult, ID, PreID);
+	if(IsValid(SDKHUD))
+	{
+		USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_Main);
+		if(IsValid(MainWidget))
+		{
+			USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(SDKHUD->GetUI(EUI::Lobby_Main));
+			if(IsValid(LobbyWidget))
+			{
+				LobbyWidget->NotifyAppliedWallpaperFlooring(bResult, ID, PreID);
+			}
+		}
+	}
 }
 
 void ASDKLobbyController::ClientySuccessedSaveHounsingData()
@@ -1030,33 +1024,37 @@ void ASDKLobbyController::ClientySuccessedSaveHounsingData()
 	g_pMyInfo->GetHousingData().SaveServerData();
 
 	auto SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr)
-		return;
-
-	auto GlobalTable = USDKTableManager::Get()->FindTableGlobalDefine(EGlobalDefine::MsgString_SavedHousing);
-	if(GlobalTable != nullptr)
+	if(IsValid(SDKHUD))
 	{
-		USDKMessageBoxWidget* pMessagBoxWidget = SDKHUD->MessageBoxOK(GlobalTable->Value[0], GlobalTable->Value[1], "", GlobalTable->Value[2]);
-		if(pMessagBoxWidget != nullptr)
+		FS_GlobalDefine* GlobalTable = USDKTableManager::Get()->FindTableGlobalDefine(EGlobalDefine::MsgString_SavedHousing);
+		if(GlobalTable != nullptr)
 		{
-			if(pMessagBoxWidget->GetButtonOk() != nullptr)
+			USDKMessageBoxWidget* MessagBoxWidget = SDKHUD->MessageBoxOK(GlobalTable->Value[0], GlobalTable->Value[1], "", GlobalTable->Value[2]);
+			if(IsValid(MessagBoxWidget))
 			{
-				pMessagBoxWidget->GetButtonOk()->OnClicked.Clear();
-				pMessagBoxWidget->GetButtonOk()->OnClicked.AddDynamic(SDKHUD, &ASDKHUD::CloseMessageBox);
+				if(IsValid(MessagBoxWidget->GetButtonOk()))
+				{
+					MessagBoxWidget->GetButtonOk()->OnClicked.Clear();
+					MessagBoxWidget->GetButtonOk()->OnClicked.AddDynamic(SDKHUD, &ASDKHUD::CloseMessageBox);
+				}
 			}
 		}
-	}	
+	}
 }
 
 void ASDKLobbyController::ClientToggleMyroomUpgradePopup(bool bOpen, int32 iRoomIndex /*= 0*/)
 {
 	auto SDKHUD = Cast<ASDKHUD>(GetHUD());
-	if(SDKHUD == nullptr || SDKHUD->GetUI(EUI::Lobby_Main) == nullptr)
-		return;
-
-	USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(SDKHUD->GetUI(EUI::Lobby_Main));
-	if(LobbyWidget == nullptr)
-		return;
-
-	LobbyWidget->OnToggleMyroomUpgradePopup(bOpen, iRoomIndex);
+	if(IsValid(SDKHUD))
+	{
+		USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_Main);
+		if(IsValid(MainWidget))
+		{
+			USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(SDKHUD->GetUI(EUI::Lobby_Main));
+			if(IsValid(LobbyWidget))
+			{
+				LobbyWidget->OnToggleMyroomUpgradePopup(bOpen, iRoomIndex);
+			}
+		}
+	}
 }
