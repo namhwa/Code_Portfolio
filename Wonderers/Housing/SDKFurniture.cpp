@@ -8,10 +8,8 @@
 #include "UObject/ConstructorHelpers.h"
 
 #include "Character/SDKHUD.h"
-#include "GameMode/SDKGameState.h"
 #include "Manager/SDKTableManager.h"
 #include "Share/SDKEnum.h"
-#include "Share/SDKHelper.h"
 
 #include "UI/SDKLobbyWidget.h"
 
@@ -54,13 +52,13 @@ ASDKFurniture::ASDKFurniture()
 	ShadowMeshComponent->SetVisibility(false);
 	
 	ConstructorHelpers::FObjectFinder<UStaticMesh> ShadowMesh(TEXT("/Game/Environments/Public/Bbox/Plane.Plane"));
-	if (ShadowMesh.Succeeded() == true)
+	if (ShadowMesh.Succeeded())
 	{
 		ShadowMeshComponent->SetStaticMesh(ShadowMesh.Object);
 	}
 
 	ConstructorHelpers::FObjectFinder<UMaterialInterface> ShadowMaterial(TEXT("/Game/Characters/Public/Materials/M_Shadow.M_Shadow"));
-	if (ShadowMaterial.Succeeded() == true)
+	if (ShadowMaterial.Succeeded())
 	{
 		ShadowMeshComponent->SetMaterial(0, ShadowMaterial.Object);
 	}
@@ -89,19 +87,23 @@ void ASDKFurniture::NotifyActorOnReleased(FKey ButtonReleased /*= EKeys::LeftMou
 		return;
 	}
 
-	auto PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PlayerController == nullptr)
-		return;
-
-	auto MyHUD = Cast<ASDKHUD>(PlayerController->GetHUD());
-	if (MyHUD == nullptr || MyHUD->GetUI(EUI::Lobby_Main) == nullptr)
-		return;
-
-	USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(MyHUD->GetUI(EUI::Lobby_Main));
-	if(LobbyWidget == nullptr)
-		return;
-
-	LobbyWidget->NotifyClickEventFurniture(this);
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (IsValid(PlayerController))
+	{
+		ASDKHUD* MyHUD = Cast<ASDKHUD>(PlayerController->GetHUD());
+		if (IsValid(MyHUD)))
+		{
+			USDKUserWidget* ModeMainWidget = (MyHUD->GetUI(EUI::Lobby_Main));
+			if(IsValid(ModeMainWidget))
+			{
+				USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(ModeMainWidget);
+				if(IsValid(LobbyWidget))
+				{
+					LobbyWidget->NotifyClickEventFurniture(this);
+				}
+			}
+		}
+	}
 }
 
 void ASDKFurniture::NotifyActorOnInputTouchEnd(const ETouchIndex::Type FingerIndex)
@@ -109,32 +111,38 @@ void ASDKFurniture::NotifyActorOnInputTouchEnd(const ETouchIndex::Type FingerInd
 	Super::NotifyActorOnInputTouchEnd(FingerIndex);
 
 	if(FurnitureType <= EFurnitureType::Floor || IsPreviewActor)
-		return;
-
-	auto PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PlayerController == nullptr)
-		return;
-
-	auto MyHUD = Cast<ASDKHUD>(PlayerController->GetHUD());
-	if (MyHUD == nullptr || MyHUD->GetUI(EUI::Lobby_Main) == nullptr)
-		return;
-
-	USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(MyHUD->GetUI(EUI::Lobby_Main));
-	if(LobbyWidget == nullptr)
-		return;
-
-	LobbyWidget->NotifyClickEventFurniture(this);
-}
-
-void ASDKFurniture::InitFurnitureData()
-{
-	if(FurnitureID.IsEmpty() == true)
 	{
 		return;
 	}
 
-	auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(FurnitureID);
-	auto ItemTable = USDKTableManager::Get()->FindTableItem(FurnitureID);
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (IsValid(PlayerController))
+	{
+		ASDKHUD* MyHUD = Cast<ASDKHUD>(PlayerController->GetHUD());
+		if (IsValid(MyHUD)))
+		{
+			USDKUserWidget* ModeMainWidget = (MyHUD->GetUI(EUI::Lobby_Main));
+			if(IsValid(ModeMainWidget))
+			{
+				USDKLobbyWidget* LobbyWidget = Cast<USDKLobbyWidget>(ModeMainWidget);
+				if(IsValid(LobbyWidget))
+				{
+					LobbyWidget->NotifyClickEventFurniture(this);
+				}
+			}
+		}
+	}
+}
+
+void ASDKFurniture::InitFurnitureData()
+{
+	if(FurnitureID.IsEmpty())
+	{
+		return;
+	}
+
+	FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(FurnitureID);
+	FS_Item* ItemTable = USDKTableManager::Get()->FindTableItem(FurnitureID);
 	if(FurnitureTable == nullptr || ItemTable == nullptr)
 	{
 		UE_LOG(LogGame, Error, TEXT("Not Found MyroomParts Table : %s"), *FurnitureID);
@@ -146,12 +154,12 @@ void ASDKFurniture::InitFurnitureData()
 	SetStaticMeshLocationByType();
 	
 	// BP가 아닌 경우에만 처리
-	if (FurnitureTable->PartsClass.GetUniqueID().IsAsset() == false)
+	if (!FurnitureTable->PartsClass.GetUniqueID().IsAsset())
 	{
-		if(ItemTable->MeshPath.GetUniqueID().IsAsset() == true)
+		if(ItemTable->MeshPath.GetUniqueID().IsAsset())
 		{
-			auto FurnitureMesh = LoadObject<UStaticMesh>(nullptr, *ItemTable->MeshPath.ToString());
-			if (FurnitureMesh)
+			UStaticMesh* FurnitureMesh = LoadObject<UStaticMesh>(nullptr, *ItemTable->MeshPath.ToString());
+			if (IsValid(FurnitureMesh))
 			{
 				SetStaticMesh(FurnitureMesh);
 			}
@@ -166,10 +174,10 @@ void ASDKFurniture::InitFurnitureData()
 	{
 		if(IsPreviewActor)
 		{
-			if(ItemTable->MeshPath.GetUniqueID().IsAsset() == true)
+			if(ItemTable->MeshPath.GetUniqueID().IsAsset())
 			{
-				auto FurnitureMesh = LoadObject<UStaticMesh>(nullptr, *ItemTable->MeshPath.ToString());
-				if (FurnitureMesh)
+				UStaticMesh* FurnitureMesh = LoadObject<UStaticMesh>(nullptr, *ItemTable->MeshPath.ToString());
+				if (IsValid(FurnitureMesh))
 				{
 					SetStaticMesh(FurnitureMesh);
 				}
@@ -182,7 +190,11 @@ void ASDKFurniture::InitFurnitureData()
 
 			FVector vScale = FurnitureType == EFurnitureType::WallHangings ? FVector(2.5f) : FVector::OneVector;
 			SetStaticMeshScale(vScale);
-			MeshComponent->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+
+			if(IsValid(MeshComponent))
+			{
+				MeshComponent->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+			}
 		}
 	}
 
@@ -192,7 +204,7 @@ void ASDKFurniture::InitFurnitureData()
 
 void ASDKFurniture::SetUniqueID(FString newUniqueID)
 {
-	if(newUniqueID.IsEmpty() == true)
+	if(newUniqueID.IsEmpty())
 	{
 		return;
 	}
@@ -202,7 +214,7 @@ void ASDKFurniture::SetUniqueID(FString newUniqueID)
 
 void ASDKFurniture::SetFurnitureID(FString NewTableID)
 {
-	if(NewTableID == FurnitureID || NewTableID.IsEmpty() == true)
+	if(NewTableID == FurnitureID || NewTableID.IsEmpty())
 	{
 		return;
 	}
@@ -241,7 +253,7 @@ void ASDKFurniture::SetSavedIndex(FVector vNewIndex)
 
 FVector ASDKFurniture::GetStaticMeshLocation() const
 {
-	if(MeshComponent != nullptr)
+	if(IsValid(MeshComponent))
 	{
 		return MeshComponent->GetRelativeTransform().GetLocation();
 	}
@@ -251,7 +263,7 @@ FVector ASDKFurniture::GetStaticMeshLocation() const
 
 void ASDKFurniture::SetStaticMeshLocationByType()
 {
-	if(MeshComponent != nullptr)
+	if(IsValid(MeshComponent))
 	{
 		FVector vLocation = FVector(0.f, 0.f, -TILE_HALF);
 		if(FurnitureType == EFurnitureType::WallHangings)
@@ -276,7 +288,7 @@ void ASDKFurniture::SetStaticMeshLocationByType()
 
 void ASDKFurniture::SetStaticMeshLocation(FVector vLocation)
 {
-	if(MeshComponent != nullptr)
+	if(IsValid(MeshComponent))
 	{
 		vLocation *= TILE_HALF;
 		vLocation.Z = GetStaticMeshLocation().Z;
@@ -287,7 +299,7 @@ void ASDKFurniture::SetStaticMeshLocation(FVector vLocation)
 
 FVector ASDKFurniture::GetStaticMeshScale() const
 {
-	if(MeshComponent != nullptr)
+	if(IsValid(MeshComponent))
 	{
 		return MeshComponent->GetRelativeTransform().GetScale3D();
 	}
@@ -297,7 +309,7 @@ FVector ASDKFurniture::GetStaticMeshScale() const
 
 void ASDKFurniture::SetStaticMeshScale(FVector vScale)
 {
-	if(MeshComponent != nullptr)
+	if(IsValid(MeshComponent))
 	{
 		MeshComponent->SetRelativeScale3D(vScale);
 	}
@@ -305,7 +317,7 @@ void ASDKFurniture::SetStaticMeshScale(FVector vScale)
 
 void ASDKFurniture::SetStaticMesh(UStaticMesh * NewMesh)
 {
-	if(MeshComponent != nullptr)
+	if(IsValid(MeshComponent))
 	{
 		MeshComponent->SetStaticMesh(NewMesh);
 	}
@@ -313,7 +325,7 @@ void ASDKFurniture::SetStaticMesh(UStaticMesh * NewMesh)
 
 void ASDKFurniture::SetStaticMeshMaterial(UMaterialInterface* NewMaterial)
 {
-	if(MeshComponent != nullptr && NewMaterial != nullptr)
+	if(IsValid(MeshComponent) && IsValid(NewMaterial))
 	{
 		MeshComponent->SetMaterial(0, NewMaterial);
 	}
@@ -321,7 +333,7 @@ void ASDKFurniture::SetStaticMeshMaterial(UMaterialInterface* NewMaterial)
 
 void ASDKFurniture::SetCollisionSize(FVector vNewSize)
 {
-	if(CollisionComponent != nullptr)
+	if(IsValid(CollisionComponent))
 	{
 		CollisionComponent->SetBoxExtent(CollsionSize * vNewSize);
 	}
@@ -329,39 +341,35 @@ void ASDKFurniture::SetCollisionSize(FVector vNewSize)
 
 void ASDKFurniture::SetCollisionEnabled(bool bEnable)
 {
-	if(MeshComponent == nullptr)
+	if(IsValid(MeshComponent))
 	{
-		return;
-	}
-
-	if(bEnable == true)
-	{
-		MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	}
-	else
-	{
-		MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if(bEnable)
+		{
+			MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		else
+		{
+			MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
 	}
 }
 
 void ASDKFurniture::SetFurnitureShadow()
 {
-	if (ShadowMeshComponent == nullptr)
+	if (IsValid(ShadowMeshComponent))
 	{
-		return;
-	}
-
-	if (FurnitureType == EFurnitureType::Furniture || FurnitureType == EFurnitureType::Decoration)
-	{
-		ShadowMeshComponent->SetVisibility(true);
-		ShadowMeshComponent->SetRelativeScale3D(FVector(Size.X, Size.Y, 1.f) * 3.f);
+		if (FurnitureType == EFurnitureType::Furniture || FurnitureType == EFurnitureType::Decoration)
+		{
+			ShadowMeshComponent->SetVisibility(true);
+			ShadowMeshComponent->SetRelativeScale3D(FVector(Size.X, Size.Y, 1.f) * 3.f);
+		}
 	}
 }
 
 void ASDKFurniture::SetFurnitureArrangeEffect()
 {
 	UParticleSystem* SpawnParticleObj = LoadObject<UParticleSystem>(nullptr, TEXT("/Game/Effects/Skill/Public/My_Room_Dust.My_Room_Dust"), nullptr, LOAD_None, nullptr);
-	if(SpawnParticleObj != nullptr)
+	if(IsValid(SpawnParticleObj))
 	{
 		FVector vEffectLocation = GetActorTransform().GetLocation();
 		if(FurnitureType == EFurnitureType::WallHangings)
@@ -375,7 +383,7 @@ void ASDKFurniture::SetFurnitureArrangeEffect()
 		
 		// 이펙트 추가 및 자동 소멸
 		SpawnEffectComponent = UGameplayStatics::SpawnEmitterAttached(SpawnParticleObj, RootComponent, NAME_None, RootComponent->GetRelativeTransform().GetLocation(), RootComponent->GetRelativeTransform().Rotator(), Size + 1.f, EAttachLocation::Type::KeepWorldPosition, true);
-		if(SpawnEffectComponent != nullptr)
+		if(IsValid(SpawnEffectComponent))
 		{
 			UE_LOG(LogGame, Log, TEXT("Success Attached Spawn Effect"));
 		}
