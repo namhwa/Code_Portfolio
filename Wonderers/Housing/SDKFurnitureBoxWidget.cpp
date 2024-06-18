@@ -89,24 +89,24 @@ void USDKFurnitureBoxWidget::SetButtonFurnitureParam()
 		return;
 	}
 
-	USDKWidgetParam* pParam = SDKButtonFurniture->GetClickedParam();
-	if(!IsValid(pParam))
+	USDKWidgetParam* Param = SDKButtonFurniture->GetClickedParam();
+	if(!IsValid(Param))
 	{
-		USDKWidgetParamString* pNewParam = NewObject<USDKWidgetParamString>(this, USDKWidgetParamString::StaticClass());
-		if(IsValid(pNewParam))
+		USDKWidgetParamString* NewParam = NewObject<USDKWidgetParamString>(this, USDKWidgetParamString::StaticClass());
+		if(IsValid(NewParam))
 		{
-			pNewParam->SetValue(TableID);
+			NewParam->SetValue(TableID);
 	
-			SDKButtonFurniture->SetClickedParam(pNewParam);
+			SDKButtonFurniture->SetClickedParam(NewParam);
 			SDKButtonFurniture->OnClickedParam.AddDynamic(this, &USDKFurnitureBoxWidget::OnClickedFurniture);
 		}
 	}
 	else
 	{
-		USDKWidgetParamString* pFurnitureParam = Cast<USDKWidgetParamString>(pParam);
-		if(IsValid(pFurnitureParam))
+		USDKWidgetParamString* FurnitureParam = Cast<USDKWidgetParamString>(pParam);
+		if(IsValid(FurnitureParam))
 		{
-			pFurnitureParam->SetValue(TableID);
+			FurnitureParam->SetValue(TableID);
 		}
 	}
 }
@@ -118,8 +118,8 @@ void USDKFurnitureBoxWidget::OnClickedFurniture(USDKWidgetParam* param)
 		return;
 	}
 
-	USDKWidgetParamString* pFurnitureParam = Cast<USDKWidgetParamString>(param);
-	if(IsValid(pFurnitureParam))
+	USDKWidgetParamString* FurnitureParam = Cast<USDKWidgetParamString>(param);
+	if(IsValid(FurnitureParam))
 	{
 		ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetOwningPlayer()->GetHUD());
 		if(IsValid(SDKHUD))
@@ -130,7 +130,7 @@ void USDKFurnitureBoxWidget::OnClickedFurniture(USDKWidgetParam* param)
 				USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(MainWidget);
 				if(IsValid(HousingWidget))
 				{
-					HousingWidget->TogglePutMode(true, pFurnitureParam->GetValue());
+					HousingWidget->TogglePutMode(true, FurnitureParam->GetValue());
 				}
 			}
 		}
