@@ -268,7 +268,7 @@ void ASDKFurniture::SetStaticMeshLocationByType()
 		FVector vLocation = FVector(0.f, 0.f, -TILE_HALF);
 		if(FurnitureType == EFurnitureType::WallHangings)
 		{
-			auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(FurnitureID);
+			FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(FurnitureID);
 			if(FurnitureTable != nullptr)
 			{
 				vLocation.Y = TILE_HALF * FurnitureTable->Size.Y * 1.1f;
