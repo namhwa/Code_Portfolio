@@ -8,7 +8,6 @@
 #include "PaperSprite.h"
 
 #include "Character/SDKHUD.h"
-#include "Character/SDKLobbyController.h"
 #include "Manager/SDKTableManager.h"
 #include "Share/SDKHelper.h"
 
@@ -26,23 +25,19 @@ void USDKFurnitureBoxWidget::InitFurnitureInfo()
 		return;
 	}
 
-	auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(TableID);
-	auto ItemTable = USDKTableManager::Get()->FindTableItem(TableID);
+	FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(TableID);
+	FS_Item* ItemTable = USDKTableManager::Get()->FindTableItem(TableID);
 	if(FurnitureTable == nullptr || ItemTable == nullptr)
 	{
 		UE_LOG(LogFurnitureBox, Error, TEXT("Not Found Myroom Parts Table : %s"), *TableID);
 		return;
 	}
 
-	if (ItemTable->IconPath.GetUniqueID().IsAsset())
-	{
-		SetImageTexturePath(ImageFurnitureIcon, ItemTable->IconPath.ToString());
-	}
-
 	MaxCount = FurnitureTable->MaxCount;
 	FurnitureType = FurnitureTable->Type;
 	CategoryType = FurnitureTable->Category;
 
+	SetImageTexturePath(ImageFurnitureIcon, ItemTable->IconPath.ToString());
 	SetTextBlockString(TextFurnitureType, FSDKHelpers::GetTableString(GetWorld(), FurnitureTable->TypeName));
 	SetTextBlockString(TextFurnitureName, FSDKHelpers::GetTableString(GetWorld(), ItemTable->Name));
 	SetButtonFurnitureParam();
