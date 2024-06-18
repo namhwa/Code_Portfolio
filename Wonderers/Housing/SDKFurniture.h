@@ -6,12 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Share/SDKEnum.h"
 
-#include "Particles/ParticleSystemComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Components/BoxComponent.h"
-
 #include "SDKFurniture.generated.h"
 
+class UParticleSystemComponent;
+class UStaticMeshComponent;
+class UBoxComponent;
 
 UCLASS()
 class ARENA_API ASDKFurniture : public AActor
