@@ -41,9 +41,6 @@ public:
 	int32 GetOwnedCount() const { return OwnedCount; }
 	void SetOwnedCount(int32 NewCount);
 
-	/** 표시 설정 : 위젯 */
-	void SetWidgetVisibility(bool bVisible);
-
 	/** 설정 : 가구 버튼 */
 	void SetButtonFurnitureParam();
 
