@@ -9,6 +9,7 @@
 class UBorder;
 class UOverlay;
 class UScaleBox;
+class UTextBlock;
 
 class ASDKFurniture;
 class USDKButtonParam;
