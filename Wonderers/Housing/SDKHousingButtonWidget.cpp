@@ -11,7 +11,9 @@
 #include "Share/SDKEnum.h"
 #include "Manager/SDKTableManager.h"
 #include "UI/SDKCheckBoxParam.h"
+#include "UI/SDKParam.h"
 #include "UI/SDKHousingWidget.h"
+
 
 USDKHousingButtonWidget::USDKHousingButtonWidget()
 : bActive(true)
