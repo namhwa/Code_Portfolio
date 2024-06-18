@@ -22,10 +22,6 @@ class ARENA_API USDKFurnitureBoxWidget : public USDKUserWidget
 	GENERATED_BODY()
 	
 public:
-	// Begin UserWidget Interface
-	virtual void NativeConstruct() override;
-	// End UserWidget Interface
-
 	/** 가구 정보 초기화 */
 	void InitFurnitureInfo();
 
