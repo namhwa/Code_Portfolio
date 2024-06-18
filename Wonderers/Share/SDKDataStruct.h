@@ -8,7 +8,7 @@
 
 #define FBSTRING_TO_STRING(str) str != nullptr ? UTF8_TO_TCHAR(str->c_str()) : TEXT("")
 
-/*** 전체 사용 가능 정보 *********************************************************************************************/
+/*** 퀘스트 *********************************************************************************************************/
 struct FMissionCountData
 {
 public:
@@ -131,107 +131,5 @@ private:
 				m_QuestList.Add(FQuestData(Data->Get(i)));
 			}
 		}
-	}
-};
-
-/*** 퀘스트 *********************************************************************************************************/
-struct FGetQuestIDList
-{
-public:
-	TArray<uint32> m_QuestIDList;
-
-public:
-	FGetQuestIDList() {}
-
-	FGetQuestIDList(const Packet::Lobby::SA_GetAvailableQuestList* Data)
-	{
-		if(Data == nullptr)
-			return;
-
-		Init(Data->QuestIDList());
-	}
-
-	FGetQuestIDList(const Packet::Lobby::SN_CompleteQuest* Data)
-	{
-		if(Data == nullptr)
-			return;
-
-		Init(Data->QuestIDList());
-	}
-
-	FGetQuestIDList(const flatbuffers::Vector<uint32_t>* Data)
-	{
-		Init(Data);
-	}
-
-private:
-	void Init(const flatbuffers::Vector<uint32_t>* Data)
-	{
-		if (Data == nullptr)
-			return;
-
-		if (Data->Length() > 0)
-		{
-			for (uint32 i = 0; i < Data->Length(); i++)
-			{
-				if (Data->Get(i) <= 0)
-					continue;
-
-				m_QuestIDList.AddUnique(Data->Get(i));
-			}
-		}
-	}
-};
-
-struct FUpdateQuest
-{
-public:
-	FGetQuestList m_QuestList;
-
-public:
-	FUpdateQuest(const Packet::Lobby::SA_UpdateMissionCount* Data)
-	{
-		if(Data == nullptr)
-			return;
-
-		m_QuestList = FGetQuestList(Data->ChangeQuestList());
-	}
-};
-
-struct FAnswerQuest
-{
-public:
-	FQuestData m_Quest;
-	FUserAssetData m_AssetData;
-
-public:
-	FAnswerQuest(const Packet::Lobby::SA_StartQuest* Data)
-	{
-		if(Data == nullptr)
-			return;
-
-		m_Quest = FQuestData(Data->Quest());
-		m_AssetData = FUserAssetData(Data->UserAsset());
-	}
-};
-
-struct FEndQuest
-{
-public:
-	FQuestData m_EndQuest;
-	FGetQuestIDList m_AvailableList;
-	FUserAssetData m_AssetData;
-	FInventoryData m_ItemList;
-
-public:
-	FEndQuest(const Packet::Lobby::SA_EndQuest* Data)
-	{
-		if(Data == nullptr)
-			return;
-
-		m_EndQuest = FQuestData(Data->Quest());
-		m_AvailableList = FGetQuestIDList(Data->AvailableQuestIDList());
-		m_AssetData = FUserAssetData(Data->UserAsset());
-		m_ItemList = FInventoryData(Data->ChangeItemList());
 	}
 };
