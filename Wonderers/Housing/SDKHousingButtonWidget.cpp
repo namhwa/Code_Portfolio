@@ -23,7 +23,9 @@ void USDKHousingButtonWidget::SetHousingMenuIndex(int32 index)
 {
 	FS_GlobalDefine* GlobalTable = USDKTableManager::Get()->FindTableGlobalDefine(EGlobalDefine::HousingMenuImage);
 	if(GlobalTable == nullptr || GlobalTable->Value.Num() <= 0)
+	{
 		return;
+	}
 
 	FS_TextureSprite* TextureTable = USDKTableManager::Get()->FindTableTextureSprite(GlobalTable->Value[index]);
 	if(TextureTable != nullptr)
