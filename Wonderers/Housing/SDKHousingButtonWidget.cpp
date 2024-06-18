@@ -21,12 +21,12 @@ USDKHousingButtonWidget::USDKHousingButtonWidget()
 
 void USDKHousingButtonWidget::SetHousingMenuIndex(int32 index)
 {
-	auto GlobalTable = USDKTableManager::Get()->FindTableGlobalDefine(EGlobalDefine::HousingMenuImage);
+	FS_GlobalDefine* GlobalTable = USDKTableManager::Get()->FindTableGlobalDefine(EGlobalDefine::HousingMenuImage);
 	if(GlobalTable == nullptr || GlobalTable->Value.Num() <= 0)
 		return;
 
-	auto TextureTable = USDKTableManager::Get()->FindTableTextureSprite(GlobalTable->Value[index]);
-	if(TextureTable)
+	FS_TextureSprite* TextureTable = USDKTableManager::Get()->FindTableTextureSprite(GlobalTable->Value[index]);
+	if(TextureTable != nullptr)
 	{
 		SetImageTexturePath(ImageIcon, TextureTable->TexturePath.ToString());
 	}
