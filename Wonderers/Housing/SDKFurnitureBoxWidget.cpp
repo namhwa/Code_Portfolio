@@ -129,13 +129,13 @@ void USDKFurnitureBoxWidget::OnClickedFurniture(USDKWidgetParam* param)
 		ASDKHUD* SDKHUD = Cast<ASDKHUD>(GetOwningPlayer()->GetHUD());
 		if(IsValid(SDKHUD))
 		{
-			USDKUserWidget* UIWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
-			if(IsValid(UIWidget))
+			USDKUserWidget* MainWidget = SDKHUD->GetUI(EUI::Lobby_UIHousing);
+			if(IsValid(MainWidget))
 			{
-				USDKHousingWidget* pHousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
-				if(IsValid(pHousingWidget))
+				USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(MainWidget);
+				if(IsValid(HousingWidget))
 				{
-					pHousingWidget->TogglePutMode(true, pFurnitureParam->GetValue());
+					HousingWidget->TogglePutMode(true, pFurnitureParam->GetValue());
 				}
 			}
 		}
