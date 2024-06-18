@@ -101,7 +101,7 @@ void USDKHousingCategoryWidget::OnClickEventCategoryButton(bool bIsChecked, USDK
 				USDKHousingWidget* HousingWidget = Cast<USDKHousingWidget>(SDKHUD->GetUI(EUI::Lobby_UIHousing));
 				if(IsValid(HousingWidget))
 				{	
-					HousingWidget->SortFurnitureBoxByCategory(Cast<EFurnitureCategory>(WidgetParamID->GetValue()));
+					HousingWidget->SortFurnitureBoxByCategory(static_cast<EFurnitureCategory>(WidgetParamID->GetValue()));
 				}
 			}
 		}
