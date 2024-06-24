@@ -377,7 +377,7 @@ TArray<int32> ASDKGoldClashState::GetTeamMemberData(int32 InTeam)
 
 void ASDKGoldClashState::AddTeamMemberData(int32 InTeam, int32 InSpawn)
 {
-	if (MapTeamMembers.Contains(InTeam) == false)
+	if (!MapTeamMembers.Contains(InTeam))
 	{
 		MapTeamMembers.Add(InTeam, { InSpawn });
 	}
@@ -414,7 +414,7 @@ void ASDKGoldClashState::NotifyLeaveUser(int32 InTeam, FString InNick)
 		for (auto ItController = GetWorld()->GetPlayerControllerIterator(); ItController; ++ItController)
 		{
 			ASDKMultiGameController* SDKMultiController = Cast<ASDKMultiGameController>(ItController->Get());
-			if (IsValid(SDKMultiController) == false || SDKMultiController->GetTeamNumber() != InTeam)
+			if (!IsValid(SDKMultiController) || SDKMultiController->GetTeamNumber() != InTeam)
 			{
 				continue;
 			}
@@ -434,7 +434,7 @@ void ASDKGoldClashState::NotifyDisconnectUser(int32 InTeam, FString InNickName)
 		for (auto ItController = GetWorld()->GetPlayerControllerIterator(); ItController; ++ItController)
 		{
 			ASDKMultiGameController* SDKMultiController = Cast<ASDKMultiGameController>(ItController->Get());
-			if (IsValid(SDKMultiController) == false || SDKMultiController->GetTeamNumber() != InTeam)
+			if (!IsValid(SDKMultiController) || SDKMultiController->GetTeamNumber() != InTeam)
 			{
 				continue;
 			}
@@ -451,7 +451,7 @@ void ASDKGoldClashState::NotifyReconnectUser(int32 InTeam, FString InNickName)
 		for (auto ItController = GetWorld()->GetPlayerControllerIterator(); ItController; ++ItController)
 		{
 			ASDKMultiGameController* SDKMultiController = Cast<ASDKMultiGameController>(ItController->Get());
-			if (IsValid(SDKMultiController) == false || SDKMultiController->GetTeamNumber() != InTeam)
+			if (!IsValid(SDKMultiController) || SDKMultiController->GetTeamNumber() != InTeam)
 			{
 				continue;
 			}
@@ -471,7 +471,7 @@ void ASDKGoldClashState::NotifyOpenSurrenderVote(int32 InTeam)
 			for (auto ItController = GetWorld()->GetPlayerControllerIterator(); ItController; ++ItController)
 			{
 				ASDKMultiGameController* SDKMultiController = Cast<ASDKMultiGameController>(ItController->Get());
-				if (IsValid(SDKMultiController) == false || SDKMultiController->GetTeamNumber() != InTeam)
+				if (!IsValid(SDKMultiController) || SDKMultiController->GetTeamNumber() != InTeam)
 				{
 					continue;
 				}
@@ -489,7 +489,7 @@ void ASDKGoldClashState::NotifyOpenSurrenderVote(int32 InTeam)
 
 void ASDKGoldClashState::UpdateSurrenderVote(int32 InTeamNumber, int32 InUID, bool bResult)
 {
-	if (MapSurrenderVote.Contains(bResult) == false)
+	if (!MapSurrenderVote.Contains(bResult))
 	{
 		MapSurrenderVote.Add(bResult);
 	}
