@@ -12,6 +12,7 @@
 #include "Components/TextBlock.h"
 #include "Components/RichTextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "Stats/Stats.h"
 
 #include "Character/SDKHUD.h"
 #include "Character/SDKMyInfo.h"
@@ -28,8 +29,6 @@
 #include "Share/SDKData.h"
 #include "Share/SDKHelper.h"
 
-#include "DialogueBuilder/Public/DialogueBuilderObject.h"
-#include "Stats/Stats.h"
 
 DECLARE_CYCLE_STAT(TEXT("USDKUIScriptSceneWidget::WriteScriptContents"), STAT_USDKUIScriptSceneWidget_WriteScriptContents, STATGROUP_SDKUserWidget);
 
