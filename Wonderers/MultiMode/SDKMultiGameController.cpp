@@ -601,7 +601,7 @@ void ASDKMultiGameController::ClientToggleSurrenderVote_Implementation(bool bOpe
 				ASDKGoldClashState* SDKGoldClashState = GetWorld()->GetGameState<ASDKGoldClashState>();
 				if (IsValid(SDKGoldClashState))
 				{
-					if (SDKGoldClashState->IsCustomMatch() == false)
+					if (!SDKGoldClashState->IsCustomMatch())
 					{
 						MainWidget->SetVisibilityButtonSurrender(false);
 					}
