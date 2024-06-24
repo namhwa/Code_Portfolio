@@ -70,7 +70,7 @@ void USDKUIScriptSceneWidget::CloseUIProcess()
 
 	SetTogglePlayerInput(true);
 
-	if (NofityCloseScriptEvent.IsBound() == true)
+	if (NofityCloseScriptEvent.IsBound())
 	{
 		NofityCloseScriptEvent.Broadcast();
 	}
@@ -94,7 +94,7 @@ void USDKUIScriptSceneWidget::CreateUIProcess()
 void USDKUIScriptSceneWidget::SetScriptID(FString ID)
 {
 	ScriptID = ID;
-	if(ScriptID.IsEmpty() == true || ScriptID == TEXT("0"))
+	if(ScriptID.IsEmpty() || ScriptID == TEXT("0"))
 	{
 		CloseScript();
 	}
@@ -108,7 +108,7 @@ void USDKUIScriptSceneWidget::SetDialogObject(UDialogueBuilderObject* NewDialogO
 {
 	DialogObject = NewDialogObject;
 	
-	if (DialogObject.IsValid() == true)
+	if (DialogObject.IsValid())
 	{
 		DialogID = 0;
 		if (DialogObject.Get()->DialoguesData.Num() > 0)
@@ -124,7 +124,7 @@ void USDKUIScriptSceneWidget::SetNextScript()
 
 	StopAnimMotionActors();
 
-	if (DialogObject.IsValid() == true)
+	if (DialogObject.IsValid())
 	{
 		if (DialogObject.Get()->MoveToNextNodesFromNodeID(DialogID).Num() > 0)
 		{
@@ -138,7 +138,7 @@ void USDKUIScriptSceneWidget::SetNextScript()
 	else
 	{
 		auto ScriptTable = USDKTableManager::Get()->FindTableRow<FS_Script>(ETableType::tb_Script, ScriptID);
-		if (ScriptID.IsEmpty() == false)
+		if (ScriptID.IsEmpty())
 		{
 			UpdateScriptScene();
 		}
@@ -201,7 +201,7 @@ void USDKUIScriptSceneWidget::OnClickedRateAuto()
 
 void USDKUIScriptSceneWidget::OnClickedSkipScript()
 {
-	if (IsValid(CloseAnimSequence) == true)
+	if (IsValid(CloseAnimSequence))
 	{
 		return;
 	}
@@ -213,12 +213,12 @@ void USDKUIScriptSceneWidget::OnClickedSkipScript()
 
 void USDKUIScriptSceneWidget::OnClickedNextScript()
 {
-	if (IsValid(CloseAnimSequence) == true)
+	if (IsValid(CloseAnimSequence))
 	{
 		return;
 	}
 
-	if(WriteTimerHandle.IsValid() == true)
+	if(WriteTimerHandle.IsValid())
 	{
 		SkippedScriptAnim();
 	}
@@ -241,25 +241,25 @@ void USDKUIScriptSceneWidget::FinishCloseWidgetAnimation()
 
 void USDKUIScriptSceneWidget::InitButton()
 {
-	if (IsValid(ButtonAction) == true)
+	if (IsValid(ButtonAction))
 	{
-		if (ButtonAction->OnClicked.Contains(this, FName("OnClickedNextScript")) == false)
+		if (!ButtonAction->OnClicked.Contains(this, FName("OnClickedNextScript")))
 		{
 			ButtonAction->OnClicked.AddDynamic(this, &USDKUIScriptSceneWidget::OnClickedNextScript);
 		}
 	}
 
-	if (IsValid(ButtonAuto) == true)
+	if (IsValid(ButtonAuto))
 	{
-		if (ButtonAuto->OnClicked.Contains(this, FName("OnClickedRateAuto")) == false)
+		if (!ButtonAuto->OnClicked.Contains(this, FName("OnClickedRateAuto")))
 		{
 			ButtonAuto->OnClicked.AddDynamic(this, &USDKUIScriptSceneWidget::OnClickedRateAuto);
 		}
 	}
 
-	if (IsValid(ButtonSkip) == true)
+	if (IsValid(ButtonSkip))
 	{
-		if (ButtonSkip->OnClicked.Contains(this, FName("OnClickedSkipScript")) == false)
+		if (!ButtonSkip->OnClicked.Contains(this, FName("OnClickedSkipScript")))
 		{
 			ButtonSkip->OnClicked.AddDynamic(this, &USDKUIScriptSceneWidget::OnClickedSkipScript);
 		}
@@ -270,7 +270,7 @@ void USDKUIScriptSceneWidget::InitButton()
 
 void USDKUIScriptSceneWidget::InitDialogue()
 {
-	if (IsValid(BPDialogue) == true)
+	if (IsValid(BPDialogue))
 	{
 		TextName = Cast<UTextBlock>(BPDialogue->GetWidgetFromName(FName("TextName")));
 		TextNameTitle = Cast<UTextBlock>(BPDialogue->GetWidgetFromName(FName("TextNameTitle")));
@@ -279,9 +279,9 @@ void USDKUIScriptSceneWidget::InitDialogue()
 		NextButtonAnim = BPDialogue->GetWidgetAnimation(TEXT("Loop"));
 
 		ButtonNext = Cast<UButton>(BPDialogue->GetWidgetFromName(FName("ButtonNext")));
-		if (IsValid(ButtonNext) == true)
+		if (IsValid(ButtonNext))
 		{
-			if (ButtonNext->OnClicked.Contains(this, FName("OnClickedNextScript")) == false)
+			if (!ButtonNext->OnClicked.Contains(this, FName("OnClickedNextScript")))
 			{
 				ButtonNext->OnClicked.AddDynamic(this, &USDKUIScriptSceneWidget::OnClickedNextScript);
 			}
@@ -294,7 +294,7 @@ void USDKUIScriptSceneWidget::InitCharacterImages()
 	for (int32 i = 1; i <= 3; ++i)
 	{
 		USDKUserWidget* BPImageWidget = Cast<USDKUserWidget>(GetWidgetFromName(FName(FString::Printf(TEXT("BPCharacter_%d"), i))));
-		if (IsValid(BPImageWidget) == true)
+		if (IsValid(BPImageWidget))
 		{
 			BPCharacterImageList.Add(BPImageWidget);
 			ImageCharacterList.Add(Cast<UImage>(BPImageWidget->GetWidgetFromName(FName("Body"))));
@@ -313,12 +313,12 @@ void USDKUIScriptSceneWidget::StartScript()
 {
 	// 시퀀스 재생 중일 때, 대사 넘김 안되도록
 	USDKGameInstance* SDKGameInstance = GetGameInstance<USDKGameInstance>();
-	if (IsValid(SDKGameInstance) == true)
+	if (IsValid(SDKGameInstance))
 	{
 		SetAutoScript(SDKGameInstance->GetPlayingLevelSequence() ? EAutoScriptState::Inactive : AutoScriptState);
 	}
 
-	if (DialogObject.IsValid() == true)
+	if (DialogObject.IsValid())
 	{
 		TArray<FDialogueDetailsStruct> StartDialogue;
 		StartDialogue.Add(DialogObject.Get()->StartDialogue());
@@ -334,12 +334,12 @@ void USDKUIScriptSceneWidget::StartScript()
 void USDKUIScriptSceneWidget::SetToggleTopBar(bool bActive)
 {
 	ASDKHUD* SDKHUD = GetOwningPlayer()->GetHUD<ASDKHUD>();
-	if(IsValid(SDKHUD) == true)
+	if(IsValid(SDKHUD))
 	{
 		USDKUserWidget* TopBarWidget = SDKHUD->GetUI(EUI::TopBar);
-		if (IsValid(TopBarWidget) == true)
+		if (IsValid(TopBarWidget))
 		{
-			if (bActive == true)
+			if (bActive)
 			{
 				SetWidgetVisibility(TopBarWidget, ESlateVisibility::SelfHitTestInvisible);
 			}
@@ -357,7 +357,7 @@ void USDKUIScriptSceneWidget::SetToggleTopBar(bool bActive)
 void USDKUIScriptSceneWidget::SetTogglePlayerInput(bool bEnable)
 {
 	ASDKPlayerCharacter* SDKCharacter = GetOwningPlayerPawn<ASDKPlayerCharacter>();
-	if(IsValid(SDKCharacter) == true)
+	if(IsValid(SDKCharacter))
 	{
 		SDKCharacter->ClientInputModeChange(bEnable);
 	}
@@ -388,7 +388,7 @@ void USDKUIScriptSceneWidget::SetScriptAnim(FString Tag, FString AnimPathID)
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(Tag), AnimMotionActors);
 	if (AnimMotionActors.Num() > 0)
 	{
-		if (AnimPathID.IsEmpty() == true || AnimPathID == TEXT("0"))
+		if (AnimPathID.IsEmpty() || AnimPathID == TEXT("0"))
 		{
 			return;
 		}
@@ -423,7 +423,7 @@ void USDKUIScriptSceneWidget::SetScriptImage(const TArray<bool>& ActiveIndex, co
 		FString ImageBodyPath = TEXT("");
 		FString ImageFacePath = TEXT("");
 
-		if(ImageIDs[i] != FName("0") && ImageIDs[i].IsNone() == false)
+		if(ImageIDs[i] != FName("0") && !ImageIDs[i].IsNone())
 		{
 			auto ScriptDataTable = USDKTableManager::Get()->FindTableRow<FS_ScriptData>(ETableType::tb_ScriptData, ImageIDs[i].ToString());
 			if (ScriptDataTable != nullptr)
@@ -454,7 +454,7 @@ void USDKUIScriptSceneWidget::SetScriptImage(const TArray<bool>& ActiveIndex, co
 
 void USDKUIScriptSceneWidget::SetScriptCutSceneImage(FString ImageID)
 {
-	bool bEnableID = ImageID.IsEmpty() == false && ImageID != TEXT("0");
+	bool bEnableID = !ImageID.IsEmpty() && ImageID != TEXT("0");
 	if (bEnableID)
 	{
 		SetImageTextureID(ImageCutScene, ImageID);
@@ -474,13 +474,13 @@ void USDKUIScriptSceneWidget::SetScriptContents(FString TableID)
 	FText TableText = FSDKHelpers::GetTableText(TEXT("Common"), TableID);
 
 	USDKGameInstance* SDKGameInstance = GetGameInstance<USDKGameInstance>();
-	if (IsValid(SDKGameInstance) == true)
+	if (IsValid(SDKGameInstance))
 	{
 		Arguments.Add(TEXT("Nickname"), FText::FromString(SDKGameInstance->MyInfoManager->GetAccountData().GetNickname()));
 	}
 
 	ScriptContents = FText::Format(TableText, Arguments);
-	if(ScriptContents.IsEmpty() == false)
+	if(!ScriptContents.IsEmpty())
 	{
 		FString strScript = ScriptContents.ToString();
 
@@ -503,13 +503,13 @@ void USDKUIScriptSceneWidget::SetScriptContents(FText ScriptText)
 
 	FFormatNamedArguments Arguments;
 	USDKGameInstance* SDKGameInstance = GetGameInstance<USDKGameInstance>();
-	if (IsValid(SDKGameInstance) == true)
+	if (IsValid(SDKGameInstance))
 	{
 		Arguments.Add(TEXT("Nickname"), FText::FromString(SDKGameInstance->MyInfoManager->GetAccountData().GetNickname()));
 	}
 
 	ScriptContents = FText::Format(ScriptText, Arguments);
-	if (ScriptContents.IsEmpty() == false)
+	if (!ScriptContents.IsEmpty())
 	{
 		FString strScript = ScriptContents.ToString();
 
@@ -534,7 +534,7 @@ void USDKUIScriptSceneWidget::SetAutoScript(EAutoScriptState InState)
 	SetWidgetVisibility(ButtonNext, InState > EAutoScriptState::Inactive ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Visible);
 	SetWidgetVisibility(ButtonAction, InState > EAutoScriptState::Inactive ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Visible);
 
-	if(InState > EAutoScriptState::Inactive && WriteTimerHandle.IsValid() == false)
+	if(InState > EAutoScriptState::Inactive && !WriteTimerHandle.IsValid())
 	{
 		SetNextScript();
 	}
@@ -591,7 +591,7 @@ void USDKUIScriptSceneWidget::SetActiveButtonSkip(bool bActive)
 
 void USDKUIScriptSceneWidget::SetActiveNextScriptAnim(bool bActive)
 {
-	if(IsValid(BPDialogue) == true)
+	if(IsValid(BPDialogue))
 	{
 		if (bActive)
 		{
@@ -637,7 +637,7 @@ void USDKUIScriptSceneWidget::UpdateScriptScene()
 	SetActiveButtonSkip(ScriptTable->Skippable);
 
 	// 다음 ScriptID 설정
-	if (ScriptTable->LinkID.IsEmpty() == true || ScriptTable->LinkID == TEXT("0"))
+	if (ScriptTable->LinkID.IsEmpty() || ScriptTable->LinkID == TEXT("0"))
 	{
 		ScriptID.Empty();
 	}
@@ -675,7 +675,7 @@ void USDKUIScriptSceneWidget::UpdateScriptScene(const TArray<FDialogueDetailsStr
 
 	DialogID = FirstDialog->NodeId;
 
-	if (FirstDialog->bUseTableID == true)
+	if (FirstDialog->bUseTableID)
 	{
 		auto ScriptTable = USDKTableManager::Get()->FindTableRow<FS_Script>(ETableType::tb_Script, FirstDialog->ScriptID);
 		if (ScriptTable != nullptr)
@@ -695,23 +695,6 @@ void USDKUIScriptSceneWidget::UpdateScriptScene(const TArray<FDialogueDetailsStr
 	}
 	else
 	{
-		/*SetScriptName(FirstDialog->SpeakerName);
-		SetScriptImage(FirstDialog->Speaker, FirstDialog->CharacterImage);
-		SetScriptEmotion(FirstDialog->Emotion);
-		SetScriptContents(FirstDialog->DialogueNodeText);
-
-		SetScriptAnim(FirstDialog->Tag, FirstDialog->Tag_Motion.ToString());
-
-		if (FirstDialog->WriteEffect == true)
-		{
-			WriteTime = FirstDialog->WriteEffectSpeed;
-		}
-		else
-		{
-			WriteTime = 0.f;
-		}
-
-		SetActiveButtonSkip(false);*/
 		SetNextScript();
 	}
 
@@ -743,7 +726,7 @@ void USDKUIScriptSceneWidget::StopAnimMotionActors()
 		for (auto iter : AnimMotionActors)
 		{
 			ASDKCharacter* ItCharacter = Cast<ASDKCharacter>(iter);
-			if (IsValid(ItCharacter) == true)
+			if (IsValid(ItCharacter))
 			{
 				ItCharacter->ClientStopAnimMontage();
 			}
@@ -778,7 +761,7 @@ void USDKUIScriptSceneWidget::ClearScriptScene()
 
 void USDKUIScriptSceneWidget::CloseScript()
 {
-	if (IsValid(CloseAnimSequence) == true)
+	if (IsValid(CloseAnimSequence))
 	{
 		return;
 	}
