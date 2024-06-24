@@ -339,62 +339,6 @@ void ASDKGoldClashMode::DefaultTimer()
 	}
 }
 
-KGoldClashMode::CheckModeFinishCondition(const int32 SpawnID, const int32 Gold)
-{
-	ASDKGoldClashState* SDKGoldClashState = Cast<ASDKGoldClashState>(GameState);
-	if (!IsValid(SDKGoldClashState))
-	{
-		return;
-	}
-	
-	if (SpawnID == 0 || Gold < MaxGoldPoint)
-	{
-		if (RankerSpawnNumber == 0)
-		{
-			RankersGold = 0;
-			return;
-		}
-		else
-		{
-			RankersGold = 0;
-			RankerSpawnNumber = 0;
-			SDKGoldClashState->OnStopBeforeGameOver();
-		}
-	}
-	else
-	{
-		if (RankerSpawnNumber == 0 && SpawnID != RankerSpawnNumber)
-		{
-			// 첫 골드 크라운
-			if (Gold >= MaxGoldPoint)
-			{
-				RankerSpawnNumber = SpawnID;
-				RankersGold = Gold;
-				SDKGoldClashState->OnStartBeforeGameOver(WinnerGameOverCountDown, SpawnID);
-			}
-		}
-		else if (SpawnID != RankerSpawnNumber)
-		{
-			// 골드 크라운 역전
-			if (Gold >= MaxGoldPoint && Gold > RankersGold)
-			{
-				RankerSpawnNumber = SpawnID;
-				RankersGold = Gold;
-				SDKGoldClashState->OnStartBeforeGameOver(WinnerGameOverCountDown, SpawnID);
-			}
-		}
-		else if (SpawnID == RankerSpawnNumber)
-		{
-			if (Gold < MaxGoldPoint)
-			{
-				RankerSpawnNumber = 0;
-				RankersGold = 0;
-				SDKGoldClashState->OnStopBeforeGameOver();
-			}
-		}
-	}
-}
-
 float ASDKGoldClashMode::GetPassiveGoldIntervalTime() const
 {
 	return PassiveGoldIntervalTime;	
@@ -523,50 +467,23 @@ void ASDKGoldClashMode::SetFinishGameResultRankingData()
 
 		if(SDKPlayerState->GetPlayerId() > 0)
 		{
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("UID : %d"), SDKPlayerState->GetPlayerId());
-			UE_LOG(LogGoldClash, Log, TEXT("Nickname : %s"), *SDKPlayerState->GetNickName());
-			UE_LOG(LogGoldClash, Log, TEXT("Team Number : %d"), SDKPlayerState->GetTeamNumber());
-			UE_LOG(LogGoldClash, Log, TEXT("Prev Ranking Point : %d"), SDKPlayerState->GetRankPoint());
-#endif
-
 			// 실력 지수
 			float MySkillScore = FMath::Pow(10.f, ((SDKPlayerState->GetRankPoint() - 30.f) / 600.f));
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("My Avg Skill Score : %f"), MySkillScore);
-#endif
-
 			const int32 EnemyTeamNumber = (GameInfo.TeamNumber == 1) ? 2 : 1;
 			float EnemyAvgSkillScore = FMath::Pow(10.f, ((GetTeamAvgRankingPoint(EnemyTeamNumber) - 30.f) / 600.f));
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Enemy Avg Ranking Point : %f"), GetTeamAvgRankingPoint(EnemyTeamNumber));
-			UE_LOG(LogGoldClash, Log, TEXT("Enemy Avg Skill Score : %f"), EnemyAvgSkillScore);
-#endif
-
+			
 			float SkillScore = MySkillScore / EnemyAvgSkillScore;
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Skill Score : %f"), SkillScore);
-#endif
-
+			
 			// 예상 승률
 			float WinnerRate = round(SkillScore / (SkillScore + 1) * 100.f) / 100.f;
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Winner Rate : %f"), WinnerRate);
-#endif
-
+			
 			// ELO Rating
 			float WinnerPoint = GameInfo.TeamNumber == RankerTeamNumber ? 1.f : 0.f; // 무승부 처리필요
 			float ELORating = round(SDKPlayerState->GetRankPoint() + 30.f * (WinnerPoint - WinnerRate)) - SDKPlayerState->GetRankPoint();
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("ELO Rating : %f"), ELORating);
-#endif
-
+			
 			// 연승점수
 			float WinningStreakScore = FMath::Min(5.f, FMath::Max(0.f, static_cast<float>(SDKPlayerState->GetWinningStreak()) - 1.f));
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Winning Streak Score : %f"), WinningStreakScore);
-#endif
-
+			
 			// 킬포인트
 			float KillDeathPoint = SDKPlayerState->GetNumOfKill() - SDKPlayerState->GetNumOfDeath();
 			bool IsActiveKillPoint = KillDeathPoint > -20.f;
@@ -576,10 +493,7 @@ void ASDKGoldClashMode::SetFinishGameResultRankingData()
 			{
 				KillDeathScore = FMath::Max(0.f, (KillDeathPoint / KillDeathLerpPoint) * 10.f);
 			}
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Kill Death Score : %f"), KillDeathScore);
-#endif
-
+			
 			RankPoint = FMath::RoundToInt(ELORating + WinningStreakScore + KillDeathScore);
 			if (GameInfo.TeamNumber == RankerTeamNumber)
 			{
@@ -589,11 +503,7 @@ void ASDKGoldClashMode::SetFinishGameResultRankingData()
 			{
 				RankPoint = FMath::Min(-1, RankPoint);
 			}
-
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Ranking Point : %d"), RankPoint);
-			UE_LOG(LogGoldClash, Log, TEXT("============================================================================="));
-#endif
+			
 		}
 		/** CalcRankPoint End*/
 
@@ -655,51 +565,27 @@ void ASDKGoldClashMode::SetFinishExitPlayerRankingData(int32& FinishRank, TArray
 		if (MapExitPlayerRankPointData.Contains(Iter.Key))
 		{
 			FRankPointData& RankData = MapExitPlayerRankPointData[Iter.Key];
-
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Exit Player ================================================================="));
-			UE_LOG(LogGoldClash, Log, TEXT("My Rank Point : %d"), RankData.CurrentRankPoint);
-#endif
+			
 			float SkillScore = 0;
 			float MySkillScore = FMath::Pow(10.f, ((RankData.CurrentRankPoint - 30.f) / 600.f));
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("My Avg Skill Score : %f"), MySkillScore);
-#endif
-
+			
 			const int32 EnemyTeamNumber = (RankData.TeamNumber == 1) ? 2 : 1;
 			const float EnemyAvgPoint = GetTeamAvgRankingPoint(EnemyTeamNumber);
 			float EnemyAvgSkillScore = FMath::Pow(10.f, ((EnemyAvgPoint - 30.f) / 600.f));
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Enemy Team Number : %d"), EnemyTeamNumber);
-			UE_LOG(LogGoldClash, Log, TEXT("Enemy Avg Ranking Point : %f"), EnemyAvgPoint);
-			UE_LOG(LogGoldClash, Log, TEXT("Enemy Avg Skill Score : %f"), EnemyAvgSkillScore);
-#endif
 
 			//실력 지수
 			SkillScore = MySkillScore / EnemyAvgSkillScore;
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Skill Score : %f"), SkillScore);
-#endif
-
+			
 			// 예상 승률
 			float WinnerRate = round(SkillScore / (SkillScore + 1) * 100.f) / 100.f;
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Winner Rate : %f"), WinnerRate);
-#endif
-
+			
 			// ELO Rating
 			float WinnerPoint = Iter.Value.TeamNumber == RankerTeamNumber ? 1.f : 0.f;
 			float ELORating = round(RankData.CurrentRankPoint + 30.f * (WinnerPoint - WinnerRate)) - RankData.CurrentRankPoint;
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("ELO Rating : %f"), ELORating);
-#endif
-
+			
 			// 연승점수
 			float WinningStreakScore = FMath::Min(5.f, FMath::Max(0.f, static_cast<float>(RankData.WinningStreak) - 1.f));
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Winning Streak Score : %f"), WinningStreakScore);
-#endif
-
+			
 			// 킬포인트
 			float KillDeathPoint = RankData.KillCount - RankData.DeathCount;
 			bool IsActiveKillPoint = KillDeathPoint > -20.f;
@@ -709,10 +595,7 @@ void ASDKGoldClashMode::SetFinishExitPlayerRankingData(int32& FinishRank, TArray
 			{
 				KillDeathScore = FMath::Max(0.f, (KillDeathPoint / KillDeathLerpPoint) * 10.f);
 			}
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Kill Death Score : %f"), KillDeathScore);
-#endif
-
+			
 			int32 Result = FMath::RoundToInt(ELORating + WinningStreakScore + KillDeathScore);
 			if (Iter.Value.TeamNumber == RankerTeamNumber)
 			{
@@ -722,12 +605,7 @@ void ASDKGoldClashMode::SetFinishExitPlayerRankingData(int32& FinishRank, TArray
 			{
 				Result = FMath::Min(-1, Result);
 			}
-
-#if !UE_BUILD_SHIPPING
-			UE_LOG(LogGoldClash, Log, TEXT("Ranking Point : %d"), Result);
-			UE_LOG(LogGoldClash, Log, TEXT("============================================================================="));
-#endif
-
+			
 			Iter.Value.RankPoint = Result;
 			InResultInfo.Add(Iter.Value);
 
@@ -785,44 +663,6 @@ void ASDKGoldClashMode::DeleteMapExitPlayerRankPointData(const int32 InUserID)
 				MapExitPlayerRankPointData.Shrink();
 			}
 		}
-	}
-}
-
-void ASDKGoldClashMode::UpdateExitedUserResultInfo(const int32 InUesrID, const FGoldClashResultInfo& InData)
-{
-	if (MapExitedUserResultInfo.Contains(InUesrID))
-	{
-		MapExitedUserResultInfo[InUesrID] = InData;
-	}
-	else
-	{
-		MapExitedUserResultInfo.Emplace(InUesrID, InData);
-	}
-}
-
-void ASDKGoldClashMode::AppenExitedUserResultInfo(TArray<FGoldClashResultInfo>& InTargetList)
-{
-	if (MapExitedUserResultInfo.Num() <= 0)
-	{
-		return;
-	}
-	
-	for (auto IterExitPlayer : MapExitedUserResultInfo)
-	{
-		const FGoldClashResultInfo& UserInfo = IterExitPlayer.Value;
-		const int32 NewUserID = UserInfo.UserID;
-
-		FGoldClashResultInfo* FindData = InTargetList.FindByPredicate([NewUserID](auto Data)
-		{
-			return Data.UserID == NewUserID;
-		});
-		if (FindData)
-		{
-			continue;
-		}
-		
-		// 리스트의 없는 유저정보 추가
-		InTargetList.Add(UserInfo);
 	}
 }
 
@@ -955,49 +795,26 @@ void ASDKGoldClashMode::SendMultiGamePenaltyUserInfo(const FGoldClashResultInfo 
 
 int32 ASDKGoldClashMode::CalculatePenaltyRankingPoint(const FRankPointData& InRankData)
 {
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("My Rank Point : %d"), InRankData.CurrentRankPoint);
-#endif
 	float SkillScore = 0;
 	float MySkillScore = FMath::Pow(10.f, ((InRankData.CurrentRankPoint - 30.f) / 600.f));
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("My Avg Skill Score : %f"), MySkillScore);
-#endif
-
+	
 	const int32 EnemyTeamNumber = (InRankData.TeamNumber == 1) ? 2 : 1;
 	const float EnemyAvgPoint = GetTeamAvgRankingPoint(EnemyTeamNumber);
 	float EnemyAvgSkillScore = FMath::Pow(10.f, ((EnemyAvgPoint - 30.f) / 600.f));
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("Enemy Team Number : %d"), EnemyTeamNumber);
-	UE_LOG(LogGoldClash, Log, TEXT("Enemy Avg Ranking Point : %f"), EnemyAvgPoint);
-	UE_LOG(LogGoldClash, Log, TEXT("Enemy Avg Skill Score : %f"), EnemyAvgSkillScore);
-#endif
-
+	
 	//실력 지수
 	SkillScore = MySkillScore / EnemyAvgSkillScore;
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("Skill Score : %f"), SkillScore);
-#endif
-
+	
 	// 예상 승률
 	float WinnerRate = round(SkillScore / (SkillScore + 1) * 100.f) / 100.f;
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("Winner Rate : %f"), WinnerRate);
-#endif
-
+	
 	// ELO Rating
 	float WinnerPoint = 0.f;
 	float ELORating = round(InRankData.CurrentRankPoint + 30.f * (WinnerPoint - WinnerRate)) - InRankData.CurrentRankPoint;
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("ELO Rating : %f"), ELORating);
-#endif
-
+	
 	// 연승점수
 	float WinningStreakScore = FMath::Min(5.f, FMath::Max(0.f, static_cast<float>(InRankData.WinningStreak) - 1.f));
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("Winning Streak Score : %f"), WinningStreakScore);
-#endif
-
+	
 	// 킬포인트
 	float KillDeathPoint = (FMath::Min(InRankData.KillCount, 5)) - InRankData.DeathCount;
 	bool IsActiveKillPoint = KillDeathPoint > -20.f;
@@ -1007,10 +824,7 @@ int32 ASDKGoldClashMode::CalculatePenaltyRankingPoint(const FRankPointData& InRa
 	{
 		KillDeathScore = FMath::Max(0.f, (KillDeathPoint / KillDeathLerpPoint) * 10.f);
 	}
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("Kill Death Score : %f"), KillDeathScore);
-#endif
-
+	
 	int32 PenaltyPoint = 10;
 	FS_GlobalDefine* GDTable = USDKTableManager::Get()->FindTableGlobalDefine(EGlobalDefine::GoldClashDodgeVariablePoint);
 	if (GDTable && GDTable->Value.Num() > 0)
@@ -1019,10 +833,6 @@ int32 ASDKGoldClashMode::CalculatePenaltyRankingPoint(const FRankPointData& InRa
 	}
 
 	int32 Result = FMath::Min(FMath::RoundToInt(ELORating + WinningStreakScore + KillDeathScore) - PenaltyPoint, -PenaltyPoint);
-#if !UE_BUILD_SHIPPING
-	UE_LOG(LogGoldClash, Log, TEXT("Ranking Point : %d"), Result);
-	UE_LOG(LogGoldClash, Log, TEXT("--------------------------------------------------------------------------------------------"));
-#endif
-
+	
 	return Result;
 }
