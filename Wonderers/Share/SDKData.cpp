@@ -104,7 +104,7 @@ void CHousingData::ApplyFurniture(const FString strUniqueID, const CFurnitureDat
 
 void CHousingData::RemoveFurniture(const FString strUniqueID)
 {
-	if(mapFurnitures.Contains(strUniqueID) == false)
+	if(!mapFurnitures.Contains(strUniqueID))
 	{
 		return;
 	}
@@ -163,7 +163,7 @@ FVector CHousingData::GetIndex(FVector vStartLocation, FVector vLocation, FVecto
 
 int32 CHousingData::GetArrangedItemCount(const FString strTableID)
 {
-	if(strTableID.IsEmpty() == true)
+	if(strTableID.IsEmpty())
 	{
 		return -1;
 	}
@@ -198,7 +198,7 @@ int32 CHousingData::GetArrangedAllItemCount() const
 
 CFurnitureData CHousingData::GetWallpaperByKey(const FString strKey) const
 {
-	if(mapWallpaper.Contains(strKey) == true)
+	if(mapWallpaper.Contains(strKey))
 	{
 		return mapWallpaper[strKey];
 	}
@@ -208,7 +208,7 @@ CFurnitureData CHousingData::GetWallpaperByKey(const FString strKey) const
 
 CFurnitureData CHousingData::GetFlooringByKey(const FString strKey) const
 {
-	if(mapFlooring.Contains(strKey) == true)
+	if(mapFlooring.Contains(strKey))
 	{
 		return mapFlooring[strKey];
 	}
@@ -218,7 +218,7 @@ CFurnitureData CHousingData::GetFlooringByKey(const FString strKey) const
 
 CFurnitureData CHousingData::GetFurnitureByKey(const FString strKey) const
 {
-	if(mapFurnitures.Contains(strKey) == true)
+	if(mapFurnitures.Contains(strKey))
 	{
 		return mapFurnitures[strKey];
 	}
@@ -241,7 +241,7 @@ void CRoomTilesData::GetSavedTilesData(FString strUniqueID, FVector vStartIndex,
 			int32 iIndex = idxX * RoomSize.Y + idxY;
 			for(int32 idxZ = 0; idxZ < MAX_ROOM_HEIGHT; ++idxZ)
 			{
-				if(Tiles[iIndex].Heights[idxZ].IsEmpty() == true || Tiles[iIndex].Heights[idxZ] == strUniqueID)
+				if(Tiles[iIndex].Heights[idxZ].IsEmpty() || Tiles[iIndex].Heights[idxZ] == strUniqueID)
 				{
 					continue;
 				}
@@ -294,13 +294,13 @@ bool CRoomTilesData::CheckEnableTileData(FVector vStartIndex, FVector vSize, FSt
 			}
 
 			int32 index = idxX * RoomSize.Y + idxY;
-			if(Tiles.IsValidIndex(index) == false)
+			if(!Tiles.IsValidIndex(index))
 			{
 				return false;
 			}
 
 			// Z축 검사 : 위 → 아래
-			if(CheckEnableTileDataZ(index, vStartIndex.Z, vSize.Z, strUniqueID) == true)
+			if(CheckEnableTileDataZ(index, vStartIndex.Z, vSize.Z, strUniqueID))
 			{
 				continue;
 			}
@@ -329,7 +329,7 @@ bool CRoomTilesData::CheckEnableTileDataZ(int32 iTileIndex, int32 iZindex, float
 			GEngine->AddOnScreenDebugMessage(-1, 6.f, FColor::Red, Tiles[iTileIndex].Heights[idxZ]);
 #endif
 
-			if(Tiles[iTileIndex].Heights[idxZ].IsEmpty() == false && Tiles[iTileIndex].Heights[idxZ] != strUniqueID)
+			if(!Tiles[iTileIndex].Heights[idxZ].IsEmpty() && Tiles[iTileIndex].Heights[idxZ] != strUniqueID)
 			{
 				return false;
 			}
@@ -345,7 +345,7 @@ bool CRoomTilesData::CheckEnableTileDataZ(int32 iTileIndex, int32 iZindex, float
 				return false;
 			}
 
-			if(Tiles[iTileIndex].Heights[idxZ].IsEmpty() == false && Tiles[iTileIndex].Heights[idxZ] != strUniqueID)
+			if(!Tiles[iTileIndex].Heights[idxZ].IsEmpty() && Tiles[iTileIndex].Heights[idxZ] != strUniqueID)
 			{
 				return false;
 			}
@@ -357,7 +357,7 @@ bool CRoomTilesData::CheckEnableTileDataZ(int32 iTileIndex, int32 iZindex, float
 
 bool CRoomTilesData::CheckCompareTileType(FVector vStartIndex, FVector vSize, FString TableID)
 {
-	auto FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(TableID);
+	FS_MyroomParts* FurnitureTable = USDKTableManager::Get()->FindTableMyroomParts(TableID);
 	if(FurnitureTable == nullptr)
 	{
 		return false;
@@ -373,7 +373,7 @@ bool CRoomTilesData::CheckCompareTileType(FVector vStartIndex, FVector vSize, FS
 			}
 
 			int32 index = idxX * RoomSize.Y + idxY;
-			if(Tiles.IsValidIndex(index) == false)
+			if(!Tiles.IsValidIndex(index))
 			{
 				return false;
 			}
@@ -571,7 +571,7 @@ void CRPGModeData::SetSpecialLevelData(const TArray<FSpecialLevelData>& InLevelL
 		for (int32 i = 0; i < IDList.Num(); ++i)
 		{
 			// 현재 챕터 아이디 목록에 없거나 깨지 않은 경우
-			if (CurrentLevelIDs.Contains(IDList[i]) == false || CurrentLevelIDs[IDList[i]] == false)
+			if (!CurrentLevelIDs.Contains(IDList[i]) || !CurrentLevelIDs[IDList[i]])
 			{
 				EnableSpecialLevelIndex = i;
 				break;
@@ -580,7 +580,7 @@ void CRPGModeData::SetSpecialLevelData(const TArray<FSpecialLevelData>& InLevelL
 	}
 
 	//가능한 레벨이 있는지 확인
-	if (IDList.IsValidIndex(EnableSpecialLevelIndex) == false)
+	if (!IDList.IsValidIndex(EnableSpecialLevelIndex))
 	{
 		EnableSpecialLevelIndex = -1;
 	}
@@ -604,14 +604,14 @@ void CRPGModeData::SetRpgChallengeMode(FName SeasonID, EContentsType ContentType
 			FVector2D Data = FVector2D(RpgChallengeTable->Value[Index], RpgChallengeTable->Rate[Index]);
 			if (RpgChallengeTable->TargetType == ERPGTargetType::Player)
 			{
-				if (PlayerChallengeData.Contains(Paramtype) == false)
+				if (!PlayerChallengeData.Contains(Paramtype))
 				{
 					PlayerChallengeData.Add(Paramtype, Data);
 				}
 			}
 			else if (RpgChallengeTable->TargetType == ERPGTargetType::NPC)
 			{
-				if (MonsterCallengeData.Contains(Paramtype) == false)
+				if (!MonsterCallengeData.Contains(Paramtype))
 				{
 					MonsterCallengeData.Add(Paramtype, Data);
 				}
@@ -638,7 +638,7 @@ void CGlitchStoreData::Clear()
 
 TArray<int32> CGlitchStoreData::GetRestoredList(EProductType InType) const
 {
-	if (RestoredList.Contains(InType) == true)
+	if (RestoredList.Contains(InType))
 	{
 		return RestoredList[InType];
 	}
@@ -650,7 +650,7 @@ bool CGlitchStoreData::GetIsHaveProduct(EProductType InType, int32 InID) const
 {
 	if (RestoredList.Num() > 0)
 	{
-		if (RestoredList.Contains(InType) == true)
+		if (RestoredList.Contains(InType))
 		{
 			return RestoredList[InType].Contains(InID);
 		}
@@ -668,7 +668,7 @@ void CGlitchStoreData::SetRestoredList(const TArray<int32>& InList)
 			FS_GlitchStore* StoreTable = USDKTableManager::Get()->FindTableRow<FS_GlitchStore>(ETableType::tb_GlitchStore, FString::FromInt(itID));
 			if (StoreTable != nullptr)
 			{
-				if (RestoredList.Contains(StoreTable->ProductType) == false)
+				if (!RestoredList.Contains(StoreTable->ProductType))
 				{
 					RestoredList.Add(StoreTable->ProductType);
 				}
@@ -684,7 +684,7 @@ void CGlitchStoreData::AddRestoreData(const int32& InID)
 	FS_GlitchStore* StoreTable = USDKTableManager::Get()->FindTableRow<FS_GlitchStore>(ETableType::tb_GlitchStore, FString::FromInt(InID));
 	if (StoreTable != nullptr)
 	{
-		if (RestoredList.Contains(StoreTable->ProductType) == false)
+		if (!RestoredList.Contains(StoreTable->ProductType))
 		{
 			RestoredList.Add(StoreTable->ProductType);
 		}
