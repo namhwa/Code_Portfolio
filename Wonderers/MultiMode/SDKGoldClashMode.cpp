@@ -114,10 +114,10 @@ void ASDKGoldClashMode::Logout(AController* Exiting)
 					AddMapExitPlayerRankPointData(PlayerId, FRankPointData(SDKPlayerState->GetTeamNumber(), PrevRankPoint, SDKPlayerState->GetWinningStreak(), SDKPlayerState->GetNumOfKill(), SDKPlayerState->GetNumOfDeath()));
 
 					// 경쟁전이거나 게임이 진행중인 경우
-					if (SDKGoldClashState->IsCustomMatch() == false && (SDKGoldClashState->IsGameActive() || SDKGoldClashState->IsGameReady()))
+					if (!SDKGoldClashState->IsCustomMatch() && (SDKGoldClashState->IsGameActive() || SDKGoldClashState->IsGameReady()))
 					{
 						// 패널티로 강퇴된 유저가 아닌 경우만 정상 루트 처리
-						if (ExitController->GetHavePenaltyPoint() == false)
+						if (!ExitController->GetHavePenaltyPoint())
 						{
 							if (MapExitPlayerRankInfoData.Contains(PlayerId))
 							{
@@ -199,7 +199,7 @@ void ASDKGoldClashMode::GiveUpGame(const int32 TeamNumber)
 	{
 		for (auto& Iter : MapExitPlayerRankInfoData)
 		{
-			if (TeamIDs.Contains(Iter.Value.TeamNumber) == false)
+			if (!TeamIDs.Contains(Iter.Value.TeamNumber))
 			{
 				TeamIDs.Add(Iter.Value.TeamNumber);
 				break;
@@ -242,7 +242,6 @@ void ASDKGoldClashMode::FinishGame()
 	}
 
 	bool bInInUser = false;
-
 	for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It)
 	{
 		// 유저들 경기 결과 씬으로 이동
@@ -353,7 +352,7 @@ void ASDKGoldClashMode::AddPlayingController(const int32 SpawnNum, AController* 
 {
 	if (IsValid(NewController))
 	{
-		if (MapPlayingController.Contains(SpawnNum) == false)
+		if (!MapPlayingController.Contains(SpawnNum))
 		{
 			MapPlayingController.Add(SpawnNum, NewController);
 		}
@@ -787,7 +786,7 @@ void ASDKGoldClashMode::SendMultiGamePenaltyUserInfo(const FGoldClashResultInfo 
 	// 노티 처리
 	GoldClashState->NotifyLeaveUser(PlayerData.TeamNumber, PlayerData.Nickname);
 
-	if (MapTeamIndex.Contains(PlayerData.TeamNumber) == false)
+	if (!MapTeamIndex.Contains(PlayerData.TeamNumber))
 	{
 		GoldClashState->GiveUpGame(PlayerData.TeamNumber);
 	}
