@@ -41,9 +41,6 @@ public:
 	UFUNCTION()
 	void DefaultTimer();
 
-	/** 최초 시작 시 기본 골드 지급 튜토리얼 */
-	void SetBaseGoldTutorial();
-
 	/** 패시브 골드 인터벌 간격 (초) */
 	float GetPassiveGoldIntervalTime() const;
 	
@@ -65,12 +62,6 @@ private:
 	/** 골클 나간 유저 랭킹 관련 정보 저장 및 제거 */
 	void AddMapExitPlayerRankPointData(const int32 InUserID, const FRankPointData& InGoldClashRankInfo);
 	void DeleteMapExitPlayerRankPointData(const int32 InUserID);
-
-	/** 골클  게임 시작 */
-	void SendStartGoldClashInfo();
-
-	/** 골클 게임 종료 */
-	void SendFinishGoldClashInfo();
 
 	float GetTeamAvgRankingPoint(const int32 TeamNum);
 	int32 GetWinnerTeamNumberByTimeOver();
