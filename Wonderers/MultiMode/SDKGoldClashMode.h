@@ -41,9 +41,6 @@ public:
 	UFUNCTION()
 	void DefaultTimer();
 
-	/** 게임 종료 조건 확인 */
-	void CheckModeFinishCondition(const int32 SpawnID, const int32 Gold);
-
 	/** 최초 시작 시 기본 골드 지급 튜토리얼 */
 	void SetBaseGoldTutorial();
 
@@ -68,10 +65,6 @@ private:
 	/** 골클 나간 유저 랭킹 관련 정보 저장 및 제거 */
 	void AddMapExitPlayerRankPointData(const int32 InUserID, const FRankPointData& InGoldClashRankInfo);
 	void DeleteMapExitPlayerRankPointData(const int32 InUserID);
-
-	// 결과창 표시를 위한, 탈주 유저 정보 저장
-	void UpdateExitedUserResultInfo(const int32 InUesrID, const FGoldClashResultInfo& InData);
-	void AppenExitedUserResultInfo(TArray<FGoldClashResultInfo>& InTargetList);
 
 	/** 골클  게임 시작 */
 	void SendStartGoldClashInfo();
@@ -110,6 +103,7 @@ private:
 	int32 CurRegenRuleIndex;
 	int32 NextRegenRuleIndex;
 
+	// 서버에서 튕긴 유저 정보
 	TMap<int32, FGoldClashResultInfo> MapExitPlayerRankInfoData;
 	TMap<int32, FRankPointData> MapExitPlayerRankPointData;
 
