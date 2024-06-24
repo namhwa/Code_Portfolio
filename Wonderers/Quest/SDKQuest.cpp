@@ -78,12 +78,12 @@ ASDKQuest::ASDKQuest()
 		DefaultSphereComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 		DefaultSphereComponent->SetCollisionResponseToChannel(COLLISION_CHARACTER, ECR_Overlap);
 
-		if (DefaultSphereComponent->OnComponentBeginOverlap.Contains(this, FName("NotifyQuestBeginOverlap")) == false)
+		if (!DefaultSphereComponent->OnComponentBeginOverlap.Contains(this, FName("NotifyQuestBeginOverlap")))
 		{
 			DefaultSphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ASDKQuest::NotifyQuestBeginOverlap);
 		}
 
-		if (DefaultSphereComponent->OnComponentEndOverlap.Contains(this, FName("NotifyQuestEndOverlap")) == false)
+		if (!DefaultSphereComponent->OnComponentEndOverlap.Contains(this, FName("NotifyQuestEndOverlap")))
 		{
 			DefaultSphereComponent->OnComponentEndOverlap.AddDynamic(this, &ASDKQuest::NotifyQuestEndOverlap);
 		}
@@ -174,10 +174,10 @@ void ASDKQuest::BeginPlay()
 					continue;
 				}
 
-				if (itSequence->GetSequencePlayer()->IsPlaying() == true)
+				if (itSequence->GetSequencePlayer()->IsPlaying())
 				{
 					bHoldDirecting = true;
-					if (itSequence->GetSequencePlayer()->OnFinished.Contains(this, FName("StartDirectiongList")) == false)
+					if (!itSequence->GetSequencePlayer()->OnFinished.Contains(this, FName("StartDirectiongList")))
 					{
 						itSequence->GetSequencePlayer()->OnFinished.AddDynamic(this, &ASDKQuest::StartDirectiongList);
 					}
@@ -190,11 +190,6 @@ void ASDKQuest::BeginPlay()
 			StartDirectiongList();
 		}
 	}
-}
-
-void ASDKQuest::SetLifeSpan(float InLifespan)
-{
-	Super::SetLifeSpan(InLifespan);
 }
 
 void ASDKQuest::LifeSpanExpired()
@@ -457,9 +452,9 @@ void ASDKQuest::InteractionPlayer()
 void ASDKQuest::StartCameraFade(float Duration)
 {
 	ASDKPlayerController* SDKPlayerController = Cast<ASDKPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (IsValid(SDKPlayerController) == true)
+	if (IsValid(SDKPlayerController))
 	{
-		if (IsValid(SDKPlayerController->PlayerCameraManager) == true)
+		if (IsValid(SDKPlayerController->PlayerCameraManager))
 		{
 			if (Duration > 0.f)
 			{
@@ -931,7 +926,7 @@ void ASDKQuest::FinishDialogue()
 	{
 #if PLATFORM_ANDROID || PLATFORM_IOS
 		ASDKHUD* SDKHUD = UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD<ASDKHUD>();
-		if (IsValid(SDKHUD) == true)
+		if (IsValid(SDKHUD))
 		{
 			SDKHUD->SetVisibilityJoystick(false);
 		}
@@ -1055,7 +1050,7 @@ void ASDKQuest::SpawnQuestActor()
 	}
 	else
 	{
-		if (QuestActorType == EActorType::None || QuestActorID == 0 || SpawnedActor.IsValid() == true)
+		if (QuestActorType == EActorType::None || QuestActorID == 0 || SpawnedActor.IsValid())
 		{
 			return;
 		}
