@@ -44,7 +44,7 @@ USDKQuestManager::~USDKQuestManager()
 
 class UWorld* USDKQuestManager::GetWorld() const
 {
-	if (IsValid(GEngine) == true && IsValid(GEngine->GameViewport) == true)
+	if (IsValid(GEngine) && IsValid(GEngine->GameViewport))
 	{
 		return GEngine->GameViewport->GetWorld();
 	}
@@ -83,14 +83,14 @@ void USDKQuestManager::CheckActiveConditionQuestMissionList(int32 InHeroID, int3
 
 				if (bAdd == true )
 				{
-					if (mapActiveList.Contains(itID) == false)
+					if (mapActiveList.Contains(itID))
 					{
 						mapActiveList.Add(itID, FQuestCondition(QMissionTable->Chapter, QMissionTable->LevelID, QMissionTable->RequireCharacter, QMissionTable->StepMin, QMissionTable->StepMax, QMissionTable->ApplyAllColumn, QMissionTable->InvisibleQuestMark));
 					}
 
 					if (bAllCharacter)
 					{
-						if (mapDataByHero.Contains(0) == false)
+						if (!mapDataByHero.Contains(0))
 						{
 							mapDataByHero.Add(0, { itID });
 						}
@@ -101,7 +101,7 @@ void USDKQuestManager::CheckActiveConditionQuestMissionList(int32 InHeroID, int3
 					}
 					else
 					{
-						if (mapDataByHero.Contains(InHeroID) == false)
+						if (!mapDataByHero.Contains(InHeroID))
 						{
 							mapDataByHero.Add(InHeroID, { itID });
 						}
@@ -162,7 +162,7 @@ void USDKQuestManager::CheckActiveConditionQuestMissionList(int32 InHeroID, int3
 				if(itHero->Value.IsValidIndex(Index))
 				{
 					int32 TableID = itHero->Value[Index];
-					if (OutmapData.Contains(TableID) == false)
+					if (!OutmapData.Contains(TableID))
 					{
 						OutmapData.Add(TableID, mapActiveList[TableID]);
 					}
@@ -216,7 +216,7 @@ void USDKQuestManager::SetQuestDataList(const TArray<int32>& QuestIDs, const TAr
 
 	for (auto& itID : QuestIDs)
 	{
-		if (mapQuestData.Contains(itID) == false)
+		if (!mapQuestData.Contains(itID)
 		{
 			SetQuestData(CQuestData(itID));
 		}
@@ -248,7 +248,7 @@ void USDKQuestManager::SetQuestDataList(const TArray<int32>& QuestIDs, const TAr
 	{
 		for (auto& itID : QuestIDs)
 		{
-			if (mapQuestData.Contains(itID) == true && mapQuestData[itID].GetCurrentMissionIndex() < 0)
+			if (mapQuestData.Contains(itID) && mapQuestData[itID].GetCurrentMissionIndex() < 0)
 			{
 				SetStartableQuestMissionList(itID);
 			}	
@@ -356,7 +356,7 @@ void USDKQuestManager::SetStartableQuestMissionList()
 					continue;
 				}
 
-				if (pQMissionData->GetIsReceivedReward() == false)
+				if (!pQMissionData->GetIsReceivedReward())
 				{
 					continue;
 				}
@@ -368,7 +368,7 @@ void USDKQuestManager::SetStartableQuestMissionList()
 				}
 
 				int32 NextID = QuestTable->MissionIDList[NextIdx];
-				if (StartableMissionIDList.Contains(NextID) == false && ProgressingMissionIDList.Contains(NextID) == false)
+				if (!StartableMissionIDList.Contains(NextID) && !ProgressingMissionIDList.Contains(NextID))
 				{
 					SetStartableQuestMissionList(itID, NextIdx);
 				}
@@ -391,7 +391,7 @@ void USDKQuestManager::SetStartableQuestMissionList(const TArray<CQuestMissionDa
 			continue;
 		}
 
-		if (mapQuestData.Contains(itData.GetQuestID()) == false)
+		if (!mapQuestData.Contains(itData.GetQuestID()))
 		{
 			SetQuestData(CQuestData(itData.GetQuestID()));
 		}
@@ -420,7 +420,7 @@ void USDKQuestManager::SetCompletableQuestMissionList(const TArray<int32>& IDLis
 	if(IDList.Num() > 0)
 	{
 		USDKGameInstance* SDKGameInstance = GetWorld()->GetGameInstance<USDKGameInstance>();
-		if(IsValid(SDKGameInstance) == true)
+		if(IsValid(SDKGameInstance))
 		{
 			for (auto itID : IDList)
 			{
@@ -458,7 +458,7 @@ void USDKQuestManager::SetCompletableQuestMissionList(const TArray<int32>& IDLis
 				{
 					for (auto& itID : IDList)
 					{
-						if (mapQuestMissionActor.Contains(itID) == false)
+						if (!mapQuestMissionActor.Contains(itID))
 						{
 							continue;
 						}
@@ -508,12 +508,12 @@ void USDKQuestManager::CheckProgressingQuestMissionData(EQuestMissionType Missio
 			{
 				TArray<FString> LevelIDs;
 				auto SDKRpgMode = GetWorld()->GetAuthGameMode<ASDKRpgGameMode>();
-				if (IsValid(SDKRpgMode) == true)
+				if (IsValid(SDKRpgMode))
 				{
 					LevelIDs = SDKRpgMode->GetLoadedLevelIDs();
 				}
 
-				if (QuestMissionTable->LevelID.IsNone() == false && LevelIDs.Contains(QuestMissionTable->LevelID.ToString()) == false)
+				if (!QuestMissionTable->LevelID.IsNone() && !LevelIDs.Contains(QuestMissionTable->LevelID.ToString()))
 				{
 					continue;
 				}
@@ -552,16 +552,16 @@ void USDKQuestManager::CheckProgressingQuestMissionData(EQuestMissionType Missio
 		if (CurrentMode == EGameMode::Rpg)
 		{
 			auto SDKRpgState = GetWorld()->GetGameState<ASDKRpgState>();
-			if (IsValid(SDKRpgState) == true && SDKRpgState->GetPlayingRoomPhase() == true)
+			if (IsValid(SDKRpgState) && SDKRpgState->GetPlayingRoomPhase())
 			{
-				if (mapSavedMissions.Contains(MissionType) == false)
+				if (!mapSavedMissions.Contains(MissionType))
 				{
 					mapSavedMissions.Add(MissionType);
 					mapSavedMissions[MissionType].Add(TargetID, Count);
 				}
 				else
 				{
-					if (mapSavedMissions[MissionType].Contains(TargetID) == false)
+					if (!mapSavedMissions[MissionType].Contains(TargetID))
 					{
 						mapSavedMissions[MissionType].Add(TargetID, Count);
 					}
@@ -576,7 +576,7 @@ void USDKQuestManager::CheckProgressingQuestMissionData(EQuestMissionType Missio
 		}
 
 		auto SDKGameInstance = GetWorld()->GetGameInstance<USDKGameInstance>();
-		if (IsValid(SDKGameInstance) == true)
+		if (IsValid(SDKGameInstance))
 		{
 			SDKGameInstance->LobbyServerManager->CQ_QuestMissionUpdateCount(MissionType, TargetID, Count);
 		}
@@ -600,7 +600,7 @@ void USDKQuestManager::SendFinishPhaseQuestMissionCount()
 		for(auto itCount : itType.Value)
 		{
 			auto SDKGameInstance = GetWorld()->GetGameInstance<USDKGameInstance>();
-			if (IsValid(SDKGameInstance) == true)
+			if (IsValid(SDKGameInstance))
 			{
 				SDKGameInstance->LobbyServerManager->CQ_QuestMissionUpdateCount(itType.Key, itCount.Key, itCount.Value);
 			}
@@ -618,7 +618,7 @@ void USDKQuestManager::UpdateStartedQuestMissionData(const CQuestMissionData& Da
 	SortQuestMissioIDListByQuestType(ProgressingMissionIDList);
 	SortQuestMissioIDListByQuestType(CompletableMissionIDList);
 
-	if (Data.GetIsReceivedReward() == false)
+	if (!Data.GetIsReceivedReward())
 	{
 		auto QuestTable = USDKTableManager::Get()->FindTableRow<FS_Quest>(ETableType::tb_Quest, FString::FromInt(Data.GetQuestID()));
 		if (QuestTable != nullptr && QuestTable->MissionCount > 0)
@@ -648,7 +648,7 @@ void USDKQuestManager::UpdateProgressingQuestMissionData(const TArray<CQuestMiss
 	for (auto& itData : Data)
 	{
 		int32 ID = itData.GetQuestMissionID();
-		if (mapQuestMissionData.Contains(itData.GetQuestMissionID()) == true)
+		if (mapQuestMissionData.Contains(itData.GetQuestMissionID()))
 		{
 			mapQuestMissionData[ID] = itData;
 		}
@@ -684,7 +684,7 @@ void USDKQuestManager::EndQuestMissionData(int32 QuestMissionID, bool bIsLast, c
 	{
 		// 마지막 퀘스트 미션이였을 경우, 퀘스트 종료
 		USDKGameInstance* SDKGameInstance = Cast<USDKGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (IsValid(SDKGameInstance) == true)
+		if (IsValid(SDKGameInstance))
 		{
 			SDKGameInstance->LobbyServerManager->CQ_QuestEnd(pEndMissionData->GetQuestID());
 		}
@@ -730,52 +730,15 @@ void USDKQuestManager::SetProgressingQuestMissionOperateUIType(int32 QuestMissio
 {
 	// 미완 작업
 	ASDKPlayerController* PlayerController = Cast<ASDKPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (IsValid(PlayerController) == true)
+	if (IsValid(PlayerController))
 	{
 		ASDKHUD* SDKHUD = PlayerController->GetHUD<ASDKHUD>();
-		if (IsValid(SDKHUD) == true)
+		if (IsValid(SDKHUD))
 		{
-			if (QuestMissionID == 1010000202)
+			USDKUserWidget* OperatedWidget = SDKHUD->OpenUI(InUI);
+			if (IsValid(OperatedWidget) == true)
 			{
-				// 골드 스매시 입장 가이드
-				USDKUIOpenWorldWidget* SDKUIOpenWorldWidget = Cast<USDKUIOpenWorldWidget>(SDKHUD->GetUI(EUI::UI_OpenWorld));
-				if (IsValid(SDKUIOpenWorldWidget) == true)
-				{
-					SDKUIOpenWorldWidget->SetVisibilityButtonAdventure(true);
-					SDKUIOpenWorldWidget->SetTutorialList();
-					SDKUIOpenWorldWidget->TutorialUserWidget();
-				}
-			}
-			/*else if (QuestMissionID == 1010000301)
-			{
-				// 가챠 가이드
-				USDKTopBarWidget* TopbarWidget = Cast<USDKTopBarWidget>(SDKHUD->GetUI(EUI::Top_TopBar));
-				if (IsValid(TopbarWidget) == true)
-				{
-					TopbarWidget->SetTutorialList();
-					TopbarWidget->TutorialUserWidget();
-				}
-			}*/
-			else if (QuestMissionID == 1030060101 || QuestMissionID == 1010000302)
-			{
-				// Middel Depth에 있는 UI 일괄 닫기 처리
-				SDKHUD->CloseMiddleUI();
-
-				// 컨텐츠 가이드 및 월드맵 트래킹 가이드
-				USDKUIOpenWorldWidget* SDKUIOpenWorldWidget = Cast<USDKUIOpenWorldWidget>(SDKHUD->GetUI(EUI::UI_OpenWorld));
-				if (IsValid(SDKUIOpenWorldWidget) == true)
-				{
-					SDKUIOpenWorldWidget->SetTutorialList();
-					SDKUIOpenWorldWidget->TutorialUserWidget();
-				}
-			}
-			else
-			{
-				USDKUserWidget* OperatedWidget = SDKHUD->OpenUI(InUI);
-				if (IsValid(OperatedWidget) == true)
-				{
-					OperatedWidget->TutorialUserWidget();
-				}
+				OperatedWidget->TutorialUserWidget();
 			}
 		}
 	}
@@ -785,39 +748,13 @@ void USDKQuestManager::CompletedEndQuestActorEvent(int32 InQuestMissionID)
 {
 	// 퀘스트 델리게이트 제거
 	RemoveDelegateHandle(InQuestMissionID);
-
-	// 튜토리얼 : 글리치 던전 전투맵 진입 완료된 경우
-	if (InQuestMissionID == 1010000102)
-	{
-		ASDKRpgGameMode* SDKRpgMode = GetWorld()->GetAuthGameMode<ASDKRpgGameMode>();
-		if (IsValid(SDKRpgMode))
-		{
-			SDKRpgMode->ClearCurrentRoom();
-		}
-
-		ASDKRpgState* SDKRpgState = GetWorld()->GetGameState<ASDKRpgState>();
-		if (IsValid(SDKRpgState))
-		{
-			SDKRpgState->CheckRpgGame(true);
-		}
-	}
-
-	// 튜토리얼 : 강제 오픈월드로 나가는 경우
-	if (InQuestMissionID == 101000103)
-	{
-		ASDKRpgState* SDKRpgState = GetWorld()->GetGameState<ASDKRpgState>();
-		if (IsValid(SDKRpgState))
-		{
-			SDKRpgState->CheckRpgGame(false);
-		}
-	}
-
+	
 	// 지역 이동이 필요한 경우
 	FS_QuestMission* QMissionTable = USDKTableManager::Get()->FindTableRow<FS_QuestMission>(ETableType::tb_QuestMission, FString::FromInt(InQuestMissionID));
 	if (QMissionTable != nullptr && QMissionTable->TargetMapPath.IsNone() == false && QMissionTable->IsForcedMove)
 	{
 		USDKGameInstance* SDKGameInstance = GetWorld()->GetGameInstance<USDKGameInstance>();
-		if (IsValid(SDKGameInstance) == true)
+		if (IsValid(SDKGameInstance))
 		{
 			if (QMissionTable->TargetMapPath == FName("OpenWorld"))
 			{
@@ -825,13 +762,7 @@ void USDKQuestManager::CompletedEndQuestActorEvent(int32 InQuestMissionID)
 			}
 		}
 	}
-
-	// 뽑기 퀘스트
-	/*if (QuestMissionID == 1010000301)
-	{
-		SetProgressingQuestMissionOperateUIType(QuestMissionID, EUI::Lobby_UIGacha);
-	}*/
-
+	
 	// 퀘스트 보드 갱신
 	UpdateQuestBoardUI();
 }
@@ -910,7 +841,7 @@ void USDKQuestManager::ResetQuestActorList()
 	{
 		for (auto itQuest : mapQuestActor)
 		{
-			if (itQuest.Value.IsValid() == true)
+			if (itQuest.Value.IsValid())
 			{
 				itQuest.Value->SetLifeSpan(0.01f);
 			}
@@ -923,7 +854,7 @@ void USDKQuestManager::ResetQuestActorList()
 	{
 		for (auto itMission : mapQuestMissionActor)
 		{
-			if (itMission.Value.IsValid() == true)
+			if (itMission.Value.IsValid())
 			{
 				itMission.Value->SetLifeSpan(0.01f);
 			}
@@ -941,7 +872,7 @@ void USDKQuestManager::ResetQuestActorList()
 void USDKQuestManager::UpdateQuestBoardUI(bool bNew /*= false*/)
 {
 	ASDKPlayerController* SDKPlayerController = Cast<ASDKPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (IsValid(SDKPlayerController) == true)
+	if (IsValid(SDKPlayerController))
 	{
 		SDKPlayerController->ClientUpdateQuestBoardUI(false);
 	}
@@ -999,7 +930,7 @@ void USDKQuestManager::EDITOR_ResetCheatClearQuest()
 	{
 		for (auto itQuest : mapQuestActor)
 		{
-			if (itQuest.Value.IsValid() == true)
+			if (itQuest.Value.IsValid())
 			{
 				itQuest.Value->SetLifeSpan(0.01f);
 			}
@@ -1010,7 +941,7 @@ void USDKQuestManager::EDITOR_ResetCheatClearQuest()
 	{
 		for (auto itMission : mapQuestActor)
 		{
-			if (itMission.Value.IsValid() == true)
+			if (itMission.Value.IsValid())
 			{
 				itMission.Value->SetLifeSpan(0.01f);
 			}
@@ -1028,7 +959,7 @@ void USDKQuestManager::SetQuestData(const CQuestData& Data)
 	UE_LOG(LogQuest, Log, TEXT("SetQuestData : %d"), Data.GetQuestID());
 
 	int32 QuestID = Data.GetQuestID();
-	if (mapQuestData.Contains(QuestID) == false)
+	if (!mapQuestData.Contains(QuestID))
 	{
 		mapQuestData.Add(QuestID, Data);
 	}
@@ -1040,11 +971,11 @@ void USDKQuestManager::SetQuestData(const CQuestData& Data)
 	// 완료 가능 OR 진행 중인 퀘스트 인지 & 상태에 따라서 이전 상태 리스트에서 제거
 	if (Data.GetIsCompletedQuest())
 	{
-		if (Data.GetIsReceivedReward() == false)
+		if (!Data.GetIsReceivedReward())
 		{
 			CompletableQuestIDList.AddUnique(QuestID);
 
-			if (ProgressingQuestIDList.Contains(QuestID) == true)
+			if (ProgressingQuestIDList.Contains(QuestID))
 			{
 				ProgressingQuestIDList.Remove(QuestID);
 			}
@@ -1053,7 +984,7 @@ void USDKQuestManager::SetQuestData(const CQuestData& Data)
 		{
 			EndQuestIDList.AddUnique(QuestID);
 
-			if (CompletableQuestIDList.Contains(QuestID) == true)
+			if (CompletableQuestIDList.Contains(QuestID))
 			{
 				CompletableQuestIDList.Remove(QuestID);
 			}
@@ -1062,7 +993,7 @@ void USDKQuestManager::SetQuestData(const CQuestData& Data)
 	else
 	{
 		// 진행중인 퀘스트 ID
-		if(Data.GetIsReceivedReward() == false)
+		if(!Data.GetIsReceivedReward())
 		{
 			ProgressingQuestIDList.AddUnique(QuestID);
 		}
@@ -1077,7 +1008,7 @@ void USDKQuestManager::SetQuestMissionData(const CQuestMissionData& Data)
 	}
 
 	int32 QuestMissionID = Data.GetQuestMissionID();
-	if (mapQuestMissionData.Contains(QuestMissionID) == false)
+	if (!mapQuestMissionData.Contains(QuestMissionID))
 	{
 		mapQuestMissionData.Add(QuestMissionID, Data);
 	}
@@ -1089,7 +1020,7 @@ void USDKQuestManager::SetQuestMissionData(const CQuestMissionData& Data)
 	// 완료 가능 OR 진행 중인 퀘스트 인지 & 상태에 따라서 이전 상태 리스트에서 제거
 	if (Data.GetIsCompletedQuestMission())
 	{
-		if (Data.GetIsReceivedReward() == false)
+		if (!Data.GetIsReceivedReward())
 		{
 			CompletableMissionIDList.AddUnique(QuestMissionID);
 		}
@@ -1097,30 +1028,30 @@ void USDKQuestManager::SetQuestMissionData(const CQuestMissionData& Data)
 		{
 			EndMissionIDList.AddUnique(QuestMissionID);
 
-			if (CompletableMissionIDList.Contains(QuestMissionID) == true)
+			if (CompletableMissionIDList.Contains(QuestMissionID))
 			{
 				CompletableMissionIDList.Remove(QuestMissionID);
 			}
 		}
 
 		// 완료할 수 있거나 완료된 상태일 때,
-		if (StartableMissionIDList.Contains(QuestMissionID) == true)
+		if (StartableMissionIDList.Contains(QuestMissionID))
 		{
 			StartableMissionIDList.Remove(QuestMissionID);
 		}
 
-		if (ProgressingMissionIDList.Contains(QuestMissionID) == true)
+		if (ProgressingMissionIDList.Contains(QuestMissionID))
 		{
 			ProgressingMissionIDList.Remove(QuestMissionID);
 		}
 	}
 	else
 	{
-		if (Data.GetIsReceivedReward() == false)
+		if (!Data.GetIsReceivedReward())
 		{
 			ProgressingMissionIDList.AddUnique(QuestMissionID);
 
-			if (StartableMissionIDList.Contains(QuestMissionID) == true)
+			if (StartableMissionIDList.Contains(QuestMissionID))
 			{
 				StartableMissionIDList.Remove(QuestMissionID);
 			}
@@ -1142,7 +1073,7 @@ void USDKQuestManager::SetUnlockContentsByEndQuest(int32 QuestID)
 				bUnlocked = mapQuestData[QuestID].GetIsReceivedReward();
 			}
 
-			if (QuestTable->UnlockedContents.IsEmpty() == false && QuestTable->UnlockedContents != TEXT("0"))
+			if (!QuestTable->UnlockedContents.IsEmpty() && QuestTable->UnlockedContents != TEXT("0"))
 			{
 				SDKGameInstance->MyInfoManager->GetUnlockContentsData().SetUnlockedContents(QuestTable->UnlockedContents, bUnlocked);
 			}
@@ -1175,10 +1106,10 @@ void USDKQuestManager::SetActiveQuestActors(EQuestState State, const TArray<int3
 				ClassPath = QuestTable->EndingQuestActor.ToString();
 			}
 
-			if (ClassPath.IsEmpty() == false)
+			if (!ClassPath.IsEmpty())
 			{
 				// 이미 퀘스트 액터가 있는 경우
-				if (mapQuestActor.Contains(itID) == true && mapQuestActor[itID].IsValid())
+				if (mapQuestActor.Contains(itID) && mapQuestActor[itID].IsValid())
 				{
 					EQuestState ActorQuestState = mapQuestActor[itID]->GetQuestState();
 					if (ActorQuestState == State || (ActorQuestState == EQuestState::Available || ActorQuestState == EQuestState::Progressing))
@@ -1193,7 +1124,7 @@ void USDKQuestManager::SetActiveQuestActors(EQuestState State, const TArray<int3
 				}
 
 				auto QuestClass = LoadClass<ASDKQuest>(GetWorld(), *ClassPath);
-				if (IsValid(QuestClass) == true)
+				if (IsValid(QuestClass))
 				{
 					FString SpawnTag = QuestClass->GetName().LeftChop(2);
 
@@ -1205,10 +1136,10 @@ void USDKQuestManager::SetActiveQuestActors(EQuestState State, const TArray<int3
 						continue;
 					}
 
-					if (mapQuestMissionActor.Contains(itID) == false)
+					if (!mapQuestMissionActor.Contains(itID))
 					{
 						auto NewQuestActor = GetWorld()->SpawnActorDeferred<ASDKQuest>(QuestClass, TagActors[0]->GetActorTransform());
-						if (IsValid(NewQuestActor) == true)
+						if (IsValid(NewQuestActor))
 						{
 							NewQuestActor->SetQuestID(itID);
 							NewQuestActor->SetQuestState(State);
@@ -1231,14 +1162,14 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 		return;
 	}
 
-	if (IsValid(GetWorld()) == false)
+	if (!IsValid(GetWorld()))
 	{
 		return;
 	}
 
 	TArray<FString> LevelIDs;
 	auto SDKRpgMode = GetWorld()->GetAuthGameMode<ASDKRpgGameMode>();
-	if (IsValid(SDKRpgMode) == true)
+	if (IsValid(SDKRpgMode))
 	{
 		LevelIDs = SDKRpgMode->GetLoadedLevelIDs();
 	}
@@ -1249,12 +1180,12 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 		auto QuestMissionTable = USDKTableManager::Get()->FindTableRow<FS_QuestMission>(ETableType::tb_QuestMission, FString::FromInt(itID));
 		if (QuestMissionTable != nullptr)
 		{
-			if (QuestMissionTable->LevelID.IsNone() == false && LevelIDs.Contains(QuestMissionTable->LevelID.ToString()) == false)
+			if (!QuestMissionTable->LevelID.IsNone() && !LevelIDs.Contains(QuestMissionTable->LevelID.ToString()))
 			{
 				// 특정 레벨ID에서 스폰해야되는 경우
 				continue;
 			}
-			else if (QuestMissionTable->LevelString.IsNone() == false && LevelName.Compare(QuestMissionTable->LevelString.ToString()) != 0)
+			else if (!QuestMissionTable->LevelString.IsNone() && LevelName.Compare(QuestMissionTable->LevelString.ToString()) != 0)
 			{
 				// 특정 레벨에서 스폰해야되는 경우
 				continue;
@@ -1279,15 +1210,15 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 				ClassPath = QuestMissionTable->EndQuestActor;
 			}
 
-			if(ClassPath.IsNull() == false)
+			if(!ClassPath.IsNull())
 			{
 				// 이미 퀘스트 액터가 있는 경우
-				if (mapQuestMissionActor.Contains(itID) == true)
+				if (mapQuestMissionActor.Contains(itID))
 				{
 					if (State == EQuestState::Progressing)
 					{
 						// 퀘스트가 진행중인 상태인 경우
-						if (mapQuestMissionActor[itID].IsValid() == true && mapQuestMissionActor[itID].Get()->GetQuestState() == EQuestState::Available)
+						if (mapQuestMissionActor[itID].IsValid() && mapQuestMissionActor[itID].Get()->GetQuestState() == EQuestState::Available)
 						{
 							mapQuestMissionActor[itID].Get()->SetQuestState(State);
 
@@ -1295,14 +1226,14 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 						}
 					}
 					
-					if (mapQuestMissionActor[itID].IsValid() == true && mapQuestMissionActor[itID]->GetQuestState() == State)
+					if (mapQuestMissionActor[itID].IsValid() && mapQuestMissionActor[itID]->GetQuestState() == State)
 					{
 						continue;
 					}
 					else
 					{
 						// 그 외 상황에서는 제거
-						if(mapQuestMissionActor[itID].IsValid() == true)
+						if(mapQuestMissionActor[itID].IsValid())
 						{
 							mapQuestMissionActor[itID].Get()->SetLifeSpan(0.01f);
 						}
@@ -1312,7 +1243,7 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 				}
 
 				TSubclassOf<ASDKQuest> QuestClass(*USDKAssetManager::Get().LoadSynchronous(ClassPath));
-				if (IsValid(QuestClass) == true)
+				if (IsValid(QuestClass))
 				{
 					FString SpawnTag = QuestClass->GetName().LeftChop(2);
 
@@ -1331,10 +1262,10 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 						continue;
 					}
 
-					if(mapQuestMissionActor.Contains(itID) == false)
+					if(!mapQuestMissionActor.Contains(itID))
 					{
 						auto NewQuestActor = GetWorld()->SpawnActorDeferred<ASDKQuest>(QuestClass, TagActors[0]->GetActorTransform());
-						if (IsValid(NewQuestActor) == true)
+						if (IsValid(NewQuestActor))
 						{
 							NewQuestActor->SetQuestMissionID(itID);
 							NewQuestActor->SetQuestState(State);
@@ -1348,16 +1279,16 @@ void USDKQuestManager::SetActiveQuestMissionActors(EQuestState State, const TArr
 			}
 			else
 			{
-				if (mapQuestMissionActor.Contains(itID) == true)
+				if (mapQuestMissionActor.Contains(itID))
 				{
-					if (mapQuestMissionActor[itID].IsValid() == true && mapQuestMissionActor[itID]->GetQuestState() == State)
+					if (mapQuestMissionActor[itID].IsValid() && mapQuestMissionActor[itID]->GetQuestState() == State)
 					{
 						continue;
 					}
 					else
 					{
 						// 퀘스트가 끝난 상태일 때만 제거
-						if (mapQuestMissionActor[itID].IsValid() == true)
+						if (mapQuestMissionActor[itID].IsValid())
 						{
 							if (State != EQuestState::End)
 							{
